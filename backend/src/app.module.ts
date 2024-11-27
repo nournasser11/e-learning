@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module,Logger } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersService } from './users/users.service';
@@ -10,7 +10,6 @@ import { ResponsesModule } from './responses/responses.module';
 import { ProgressModule } from './progress/progress.module';
 import { UserInteractionsModule } from './user_interactions/user_interactions.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
-import { ModulesCourseModule } from './modules-course/modules-course.module';
 import {MongooseModule} from '@nestjs/mongoose';
 import { UsersController } from './users/users.controller';
 import { CoursesController } from './courses/courses.controller';
@@ -29,9 +28,34 @@ import { ModulesCourseController } from './modules-course/modules-course.control
 import { ModulesCourseService } from './modules-course/modules-course.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { AuthController } from './auth/auth.controller';
+import { AuthService } from './auth/auth.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { SomeService } from './some/some.service';
+import { SomeModule } from './some/some.module';
+import config from './config/keys';
+
+
 @Module({
-  imports: [AdminModule, CoursesModule, ModulesModule, QuizzesModule, ResponsesModule, ProgressModule, UserInteractionsModule, RecommendationsModule, ModulesCourseModule,MongooseModule.forRoot('mongodb://localhost/nest'), UsersModule, AuthModule],//hankteb el connection beta3v el db beta3na hena
-  controllers: [AppController, UsersController],
-  providers: [AppService, UsersService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // Loads environment variables globally
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async () => {
+        // Hardcoded URI for debugging purposes
+        const uri = 'mongodb+srv://nournasser1556:nournasser@cluster0.7ptut.mongodb.net/ProjectSW';
+        Logger.log(`Hardcoded MongoDB URI: ${uri}`);
+        return {
+          uri,
+        };
+      },
+      inject:[ConfigService],
+    }),
+    UsersModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

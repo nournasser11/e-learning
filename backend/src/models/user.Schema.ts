@@ -4,7 +4,7 @@ import { Document } from 'mongoose';
 export type UserDocument = User & Document;
 
 @Schema({ timestamps: true })
-export class User {
+export class User extends Document {
   @Prop({ required: true })
   userId: string;
 
@@ -23,7 +23,7 @@ export class User {
   @Prop()
   profilePictureUrl?: string;
 
-  @Prop({ default: Date.now })
+  @Prop({ default: () => new Date() })
   createdAt: Date;
 }
 
