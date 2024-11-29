@@ -1,8 +1,24 @@
-// FILE: src/dto/update-user.dto.ts
+import { IsString, IsEmail, IsOptional, IsEnum } from 'class-validator';
 
 export class UpdateUserDto {
-    readonly name?: string;
-    readonly email?: string;
-    readonly password?: string;
-    readonly profilePictureUrL?: string;
-  }
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @IsEmail()
+  @IsOptional()
+  email?: string;
+
+  @IsString()
+  @IsOptional()
+  password?: string;
+
+  @IsString()
+  @IsOptional()
+  profilePictureUrl?: string;
+
+  @IsString()
+  @IsEnum(['student', 'instructor', 'admin'])
+  @IsOptional()
+  role?: string;
+}

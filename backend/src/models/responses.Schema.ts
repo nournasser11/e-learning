@@ -18,6 +18,12 @@ export class Response {
   @Prop({ required: true })
   score: number;
 
+  @Prop()
+  correctAnswers: number;
+
+  @Prop({ required: true })
+  totalQuestions: number; // Added totalQuestions property
+
   @Prop({ default: Date.now })
   submittedAt: Date;
 }

@@ -14,7 +14,7 @@ import {MongooseModule} from '@nestjs/mongoose';
 import { UsersController } from './users/users.controller';
 import { CoursesController } from './courses/courses.controller';
 import { CoursesService } from './courses/courses.service';
-import { QuizzesController } from './quizzes/quizzes.controller';
+import { QuizController } from './quizzes/quizzes.controller';
 import { QuizzesService } from './quizzes/quizzes.service';
 import { ResponsesController } from './responses/responses.controller';
 import { ResponsesService } from './responses/responses.service';
@@ -34,6 +34,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SomeService } from './some/some.service';
 import { SomeModule } from './some/some.module';
 import config from './config/keys';
+import { QuestionModule } from './questions/question.module';
 
 
 @Module({
@@ -53,7 +54,7 @@ import config from './config/keys';
       },
       inject:[ConfigService],
     }),
-    UsersModule,
+    UsersModule,QuizzesModule
   ],
   controllers: [AppController],
   providers: [AppService],

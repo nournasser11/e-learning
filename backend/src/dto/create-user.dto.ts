@@ -1,11 +1,24 @@
-import { IsString, IsEmail, IsNotEmpty } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
-import{User} from '../models/user.Schema';
+import { IsString, IsEmail, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
+
 export class CreateUserDto {
-  userId: string;
+  @IsString()
+  @IsNotEmpty()
   name: string;
+
+  @IsEmail()
+  @IsNotEmpty()
   email: string;
-  passwordHash: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @IsString()
+  @IsEnum(['student', 'instructor', 'admin'])
+  @IsNotEmpty()
   role: string;
-  profilePictureUrl: string;
+
+  @IsString()
+  @IsOptional()
+  profilePictureUrl?: string;
 }

@@ -1,15 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import * as mongoose from 'mongoose';
 
 export type UserDocument = User & Document;
 
 @Schema({ timestamps: true })
 export class User extends Document {
-  @Prop({ required: true })
+  @Prop({ type: String, default: () => new mongoose.Types.ObjectId() }) // Automatically generated ID
   userId: string;
-
-  @Prop({ required: true })
-  name: string;
 
   @Prop({ required: true, unique: true })
   email: string;

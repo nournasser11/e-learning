@@ -2,7 +2,7 @@ import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 @Schema()
-export class Quiz {
+export class Question {
   @Prop({ required: true })
   questionId: string;
 
@@ -15,15 +15,9 @@ export class Quiz {
   @Prop({ required: true })
   text: string;
 
-  @Prop()
-  correctAnswers: number;
-
-
   @Prop({ required: true, type: [Object] })
   options: { text: string; isCorrect: boolean }[];
 }
 
-export type QuizDocument = Quiz & Document;
-
-// Create the Mongoose schema for the Quiz class
-export const QuizSchema = SchemaFactory.createForClass(Quiz);
+export type QuestionDocument = Question & Document;
+export const QuestionSchema = SchemaFactory.createForClass(Question);
