@@ -54,7 +54,7 @@ import { QuestionModule } from './questions/question.module';
       },
       inject:[ConfigService],
     }),
-    UsersModule,QuizzesModule
+    UsersModule,QuizzesModule,CoursesModule
   ],
   controllers: [AppController],
   providers: [AppService],
