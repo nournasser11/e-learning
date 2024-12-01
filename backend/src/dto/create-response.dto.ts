@@ -1,13 +1,26 @@
-export class CreateResponseDto {
-    readonly questionId: string;
-    readonly userId: string;
-    readonly responseText: string;
-    readonly createdAt: Date;
+import { IsString, IsNotEmpty, IsDate, IsOptional } from 'class-validator';
 
-    constructor(questionId: string, userId: string, responseText: string) {
-        this.questionId = questionId;
-        this.userId = userId;
-        this.responseText = responseText;
-        this.createdAt = new Date();
-    }
+export class CreateResponseDto {
+  @IsString()
+  @IsNotEmpty()
+  readonly questionId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly userId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  readonly responseText: string;
+
+  @IsDate()
+  @IsOptional()
+  readonly createdAt?: Date; // Optional
+
+  constructor(questionId: string, userId: string, responseText: string, createdAt?: Date) {
+    this.questionId = questionId;
+    this.userId = userId;
+    this.responseText = responseText;
+    this.createdAt = createdAt || new Date(); // Default value if not provided
+  }
 }

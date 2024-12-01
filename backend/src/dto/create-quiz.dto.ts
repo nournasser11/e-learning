@@ -4,7 +4,11 @@ import { Type } from 'class-transformer';
 class QuestionDto {
   @IsString()
   @IsNotEmpty()
-  question: string;
+  questionId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  questionText: string;
 
   @IsArray()
   @IsNotEmpty({ each: true })
@@ -19,10 +23,6 @@ export class CreateQuizDto {
   @IsString()
   @IsNotEmpty()
   quizId: string;
-
-  @IsString()
-  @IsNotEmpty()
-  title: string;
 
   @IsString()
   @IsNotEmpty()

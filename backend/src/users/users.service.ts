@@ -1,54 +1,76 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../models/user.schema';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { LoginUserDto } from '../dto/login-user.dto';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
 
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private jwtService: JwtService,
+  ) {}
 
-  // Create a new user
   async create(createUserDto: CreateUserDto): Promise<User> {
-    this.logger.log('Creating a new user');
-    // Hash the password before saving it
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10); // 10 rounds for hashing
-
-    // Create the user
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const newUser = new this.userModel({
       ...createUserDto,
-      passwordHash: hashedPassword, // Save the hashed password
+      passwordHash: hashedPassword,
+      role: createUserDto.role === 'instructor' ? 'instructor' : 'student',
     });
     const savedUser = await newUser.save();
     this.logger.log(`User created with ID: ${savedUser._id}`);
     return savedUser;
   }
 
-  // Retrieve all users
   async findAll(): Promise<User[]> {
     return this.userModel.find().exec();
   }
 
-  // Retrieve a user by ID
   async findOne(id: string): Promise<User> {
     return this.userModel.findById(id).exec();
   }
 
-  // Update a user
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     if (updateUserDto.password) {
-      const hashedPassword = await bcrypt.hash(updateUserDto.password, 10);
-      updateUserDto = { ...updateUserDto, password: hashedPassword };
+      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }
     return this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true }).exec();
   }
 
-  // Delete a user
   async remove(id: string): Promise<User> {
     return this.userModel.findByIdAndDelete(id).exec();
+  }
+
+  async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string; user: Partial<User> }> {
+    const { email, password } = loginUserDto;
+    const user = await this.userModel.findOne({ email }).exec();
+  
+    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+  
+    const payload = { email: user.email, sub: user._id };
+    const accessToken = this.jwtService.sign(payload);
+  
+    return {
+      accessToken,
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
+    };
+  }
+  
+
+  async getProfile(id: string): Promise<User> {
+    return this.userModel.findById(id).exec();
   }
 }

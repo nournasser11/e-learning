@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { CoursesService } from './courses.service';
+import { Course } from 'src/models/courses.Schema';
 
 @Controller('courses')
 export class CoursesController {
@@ -36,5 +37,40 @@ export class CoursesController {
   @Delete(':courseId')
   async remove(@Param('courseId') courseId: string) {
     return this.coursesService.deleteCourse(courseId);
+  }
+}
+
+@Controller('courses')
+export class CourseController {
+  constructor(private readonly courseService: CoursesService) {}
+
+  @Get(':courseId/enrolled-students')
+  findNumberOfEnrolledStudents(@Param('courseId') courseId: string) {
+    return this.courseService.findNumberOfEnrolledStudents(courseId);
+  }
+
+  @Get(':courseId/students-by-performance/:performance')
+  findNumberOfStudentsByPerformance(
+    @Param('courseId') courseId: string,
+    @Param('performance') performance: string,
+  ) {
+    return this.courseService.findNumberOfStudentsByPerformance(courseId, performance);
+  }
+
+  @Post(':courseId/rate')
+  rateCourse(@Param('courseId') courseId: string, @Body('rating') rating: number) {
+    return this.courseService.rateCourse(courseId, rating);
+  }
+
+  @Get(':courseId/completed-students')
+  findNumberOfStudentsCompletedCourse(@Param('courseId') courseId: string) {
+    return this.courseService.findNumberOfStudentsCompletedCourse(courseId);
+  }
+  @Put(':courseId/modules/:moduleId')
+  async addModuleToCourse(
+    @Param('courseId') courseId: string,
+    @Param('moduleId') moduleId: string,
+  ): Promise<Course> {
+    return await this.courseService.addModuleToCourse(courseId, moduleId);
   }
 }
