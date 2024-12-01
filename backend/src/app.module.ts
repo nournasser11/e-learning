@@ -8,8 +8,6 @@ import { ModulesModule } from './modules/modules.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
 import { ResponsesModule } from './responses/responses.module';
 import { ProgressModule } from './progress/progress.module';
-import { UserInteractionsModule } from './user_interactions/user_interactions.module';
-import { RecommendationsModule } from './recommendations/recommendations.module';
 import {MongooseModule} from '@nestjs/mongoose';
 import { UsersController } from './users/users.controller';
 import { CoursesController } from './courses/courses.controller';
@@ -20,10 +18,6 @@ import { ResponsesController } from './responses/responses.controller';
 import { ResponsesService } from './responses/responses.service';
 import { ProgressController } from './progress/progress.controller';
 import { ProgressService } from './progress/progress.service';
-import { UserInteractionsController } from './user_interactions/user_interactions.controller';
-import { UserInteractionsService } from './user_interactions/user_interactions.service';
-import { RecommendationsController } from './recommendations/recommendations.controller';
-import { RecommendationsService } from './recommendations/recommendations.service';
 import { ModulesCourseController } from './modules-course/modules-course.controller';
 import { ModulesCourseService } from './modules-course/modules-course.service';
 import { UsersModule } from './users/users.module';
@@ -33,6 +27,7 @@ import { AuthService } from './auth/auth.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SomeService } from './some/some.service';
 import { SomeModule } from './some/some.module';
+import { NotesModule } from './notes/notes.module';
 import config from './config/keys';
 
 
@@ -45,7 +40,7 @@ import config from './config/keys';
       imports: [ConfigModule],
       useFactory: async () => {
         // Hardcoded URI for debugging purposes
-        const uri = 'mongodb+srv://nournasser1556:nournasser@cluster0.7ptut.mongodb.net/ProjectSW';
+        const uri = 'mongodb+srv://nournasser1556:nournasser@cluster0.7ptut.mongodb.net/';
         Logger.log(`Hardcoded MongoDB URI: ${uri}`);
         return {
           uri,
@@ -54,6 +49,7 @@ import config from './config/keys';
       inject:[ConfigService],
     }),
     UsersModule,
+    NotesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
