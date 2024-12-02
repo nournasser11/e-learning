@@ -1,8 +1,12 @@
-// FILE: src/dto/update-user.dto.ts
+import { IsOptional, IsString, MinLength } from 'class-validator';
 
 export class UpdateUserDto {
-    readonly name?: string;
-    readonly email?: string;
-    readonly password?: string;
-    readonly profilePictureUrL?: string;
-  }
+  @IsOptional()
+  @IsString()
+  @MinLength(6)
+  password?: string;
+
+  @IsOptional()
+  @IsString()
+  role?: string;
+}

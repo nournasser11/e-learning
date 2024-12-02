@@ -1,11 +1,11 @@
-
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type modulesDocument = Module & Document;
+export type ModuleDocument = Module & Document;
+
 @Schema({ timestamps: true })
 export class Module {
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   moduleId: string;
 
   @Prop({ required: true })
@@ -17,11 +17,14 @@ export class Module {
   @Prop({ required: true })
   content: string;
 
-  @Prop([String])
+  @Prop({ type: [String], default: [] })
   resources?: string[];
 
-  @Prop({ default: Date.now })
-  createdAt: Date;
+  @Prop({ default: () => new Date() })
+  createdAt?: Date;
+
+  @Prop()
+  updatedAt?: Date;
 }
 
 export const ModuleSchema = SchemaFactory.createForClass(Module);
