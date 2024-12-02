@@ -8,7 +8,6 @@ import { ModulesModule } from './module/module-course.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
 import { ResponsesModule } from './responses/responses.module';
 import { ProgressModule } from './progress/progress.module';
-import { UserInteractionsModule } from './user_interactions/user_interactions.module';
 import {MongooseModule} from '@nestjs/mongoose';
 import { UsersController } from './users/users.controller';
 import { CoursesController } from './courses/courses.controller';
@@ -19,8 +18,7 @@ import { ResponsesController } from './responses/responses.controller';
 import { ResponsesService } from './responses/responses.service';
 import { ProgressController } from './progress/progress.controller';
 import { ProgressService } from './progress/progress.service';
-import { UserInteractionsController } from './user_interactions/user_interactions.controller';
-import { UserInteractionsService } from './user_interactions/user_interactions.service';
+
 import { ModuleController } from './module/module-course.controller';
 import { ModuleService } from './module/module-course.service';
 import { UsersModule } from './users/users.module';
