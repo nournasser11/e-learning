@@ -9,7 +9,6 @@ import { QuizzesModule } from './quizzes/quizzes.module';
 import { ResponsesModule } from './responses/responses.module';
 import { ProgressModule } from './progress/progress.module';
 import { UserInteractionsModule } from './user_interactions/user_interactions.module';
-import { RecommendationsModule } from './recommendations/recommendations.module';
 import {MongooseModule} from '@nestjs/mongoose';
 import { UsersController } from './users/users.controller';
 import { CoursesController } from './courses/courses.controller';
@@ -22,10 +21,8 @@ import { ProgressController } from './progress/progress.controller';
 import { ProgressService } from './progress/progress.service';
 import { UserInteractionsController } from './user_interactions/user_interactions.controller';
 import { UserInteractionsService } from './user_interactions/user_interactions.service';
-import { RecommendationsController } from './recommendations/recommendations.controller';
-import { RecommendationsService } from './recommendations/recommendations.service';
-import { ModulesCourseController } from './modules-course/modules-course.controller';
-import { ModulesCourseService } from './modules-course/modules-course.service';
+import { ModuleController } from './module/module-course.controller';
+import { ModuleService } from './module/module-course.service';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { AuthController } from './auth/auth.controller';
@@ -55,7 +52,7 @@ import { QuestionModule } from './questions/question.module';
       },
       inject:[ConfigService],
     }),
-    UsersModule,
+    UsersModule,QuizzesModule,CourseModule,ResponsesModule,ProgressModule,AdminModule,QuestionModule,ModulesModule
   ],
   controllers: [AppController],
   providers: [AppService],
