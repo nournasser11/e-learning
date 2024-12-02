@@ -18,7 +18,8 @@ import { ResponsesController } from './responses/responses.controller';
 import { ResponsesService } from './responses/responses.service';
 import { ProgressController } from './progress/progress.controller';
 import { ProgressService } from './progress/progress.service';
-
+import { UserInteractionsController } from './user_interactions/user_interactions.controller';
+import { UserInteractionsService } from './user_interactions/user_interactions.service';
 import { ModuleController } from './module/module-course.controller';
 import { ModuleService } from './module/module-course.service';
 import { UsersModule } from './users/users.module';
@@ -28,9 +29,11 @@ import { AuthService } from './auth/auth.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SomeService } from './some/some.service';
 import { SomeModule } from './some/some.module';
-import { NotesModule } from './notes/notes.module';
+
 import config from './config/keys';
 import { QuestionModule } from './questions/question.module';
+import { ChatModule } from './chatting/ChatModule';
+import { NotesModule } from './notes/notes.module';
 
 
 @Module({
@@ -43,14 +46,16 @@ import { QuestionModule } from './questions/question.module';
       useFactory: async () => {
         // Hardcoded URI for debugging purposes
         const uri = 'mongodb+srv://nournasser1556:nournasser@cluster0.7ptut.mongodb.net/';
-        Logger.log(`Hardcoded MongoDB URI: ${uri}`);
+        Logger.log('Hardcoded MongoDB URI: ${uri}');
         return {
           uri,
         };
       },
       inject:[ConfigService],
     }),
-    UsersModule,QuizzesModule,CourseModule,ResponsesModule,ProgressModule,AdminModule,QuestionModule,ModulesModule
+    UsersModule,QuizzesModule,CourseModule,
+    ResponsesModule,ProgressModule,AdminModule,
+    QuestionModule,ModulesModule,ChatModule,NotesModule
   ],
   controllers: [AppController],
   providers: [AppService],
