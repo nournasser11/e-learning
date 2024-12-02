@@ -1,11 +1,11 @@
 import {Prop, Schema, SchemaFactory} from '@nestjs/mongoose';
 import {Document} from 'mongoose';
 
+export type MessageDocument = Message & Document;
+
 @Schema()
 export class Message {
-  @Prop({required: true})
-  messageId: string;
-
+  
   @Prop({required: true})
   userId: string;
 
@@ -15,4 +15,5 @@ export class Message {
   @Prop({required: true})
   createdAt: Date;
 }
+export const MessageSchema = SchemaFactory.createForClass(Message);
 
