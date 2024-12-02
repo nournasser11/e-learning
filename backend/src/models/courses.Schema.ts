@@ -25,7 +25,15 @@ export class Course {
 
   @Prop({ default: Date.now })
   createdAt: Date;
+
+  @Prop({ default: 0 })
+  enrolledStudents: number;
+
+  @Prop({ default: 0 })
+  completedStudents: number;
+
+  @Prop({ type: [Number], default: [] })
+  ratings: number[];
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
-//hi 
