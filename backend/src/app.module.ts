@@ -8,7 +8,6 @@ import { ModulesModule } from './module/module-course.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
 import { ResponsesModule } from './responses/responses.module';
 import { ProgressModule } from './progress/progress.module';
-import { UserInteractionsModule } from './user_interactions/user_interactions.module';
 import {MongooseModule} from '@nestjs/mongoose';
 import { UsersController } from './users/users.controller';
 import { CoursesController } from './courses/courses.controller';
