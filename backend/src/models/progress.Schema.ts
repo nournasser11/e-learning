@@ -20,6 +20,11 @@ export class Progress {
 
   @Prop({ default: Date.now, required: true })
   lastAccessed: Date;
+  @Prop({ default: false })
+  completed: boolean;
+  @Prop({ required: true })
+  quizId: string; 
+
 }
 
 

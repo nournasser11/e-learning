@@ -32,11 +32,11 @@ export class Course {
   @Prop({ default: 0 })
   completedStudents: number;
 
-  @Prop({ type: [Number], default: [] })
-  ratings: number[];
-  
   @Prop({ type: [String], default: [] })
   assignedUsers: string[];
+
+  @Prop({ type: [Number], default: [] })
+  ratings: number[];
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);

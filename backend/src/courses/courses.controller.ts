@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { Course } from 'src/models/courses.Schema';
-
+import { Controller, Post,Get,Put,Delete, UseInterceptors, UploadedFiles, Body, Param, Query } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 @Controller('courses')
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
@@ -38,15 +39,9 @@ export class CoursesController {
   async remove(@Param('courseId') courseId: string) {
     return this.coursesService.deleteCourse(courseId);
   }
-}
-
-@Controller('courses')
-export class CourseController {
-  constructor(private readonly courseService: CoursesService) {}
-
   @Get(':courseId/enrolled-students')
   findNumberOfEnrolledStudents(@Param('courseId') courseId: string) {
-    return this.courseService.findNumberOfEnrolledStudents(courseId);
+    return this.coursesService.findNumberOfEnrolledStudents(courseId);
   }
 
   @Get(':courseId/students-by-performance/:performance')
@@ -54,35 +49,24 @@ export class CourseController {
     @Param('courseId') courseId: string,
     @Param('performance') performance: string,
   ) {
-    return this.courseService.findNumberOfStudentsByPerformance(courseId, performance);
+    return this.coursesService.findNumberOfStudentsByPerformance(courseId, performance);
   }
 
-  @Post(':courseId/rate')
-  rateCourse(@Param('courseId') courseId: string, @Body('rating') rating: number) {
-    return this.courseService.rateCourse(courseId, rating);
+  @Post(':id/rate')
+  async rateCourse(@Param('id') courseId: string, @Body('rating') rating: number): Promise<Course> {
+    return this.coursesService.rateCourse(courseId, rating);
   }
 
   @Get(':courseId/completed-students')
   findNumberOfStudentsCompletedCourse(@Param('courseId') courseId: string) {
-    return this.courseService.findNumberOfStudentsCompletedCourse(courseId);
+    return this.coursesService.findNumberOfStudentsCompletedCourse(courseId);
   }
+
   @Put(':courseId/modules/:moduleId')
   async addModuleToCourse(
     @Param('courseId') courseId: string,
     @Param('moduleId') moduleId: string,
   ): Promise<Course> {
-    return await this.courseService.addModuleToCourse(courseId, moduleId);
-  }
-
-  @Post(':courseId/assign')
-  async assignUserToCourse(
-    @Param('courseId') courseId: string,
-    @Body('userId') userId: string,
-  ): Promise<Course> {
-    if (!userId) {
-      throw new BadRequestException('User ID is required');
-    }
-
-    return this.courseService.assignUserToCourse(courseId, userId);
+    return await this.coursesService.addModuleToCourse(courseId, moduleId);
   }
 }

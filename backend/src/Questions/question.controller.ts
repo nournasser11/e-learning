@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Put, Delete, Body, Query, Param } from '@nestjs/common';
+import { Difficulty } from '../models/questions.schema';
 import { QuestionService } from './questions.service';
 import { CreateQuestionDto } from '../dto/create-question.dto';
 import { UpdateQuestionDto } from '../dto/update-question.dto';
@@ -45,7 +46,8 @@ export class QuestionController {
   ) {
     const updateData = {
       ...updateQuestionDto,
-      options: updateQuestionDto.options.map(option => ({ text: option, isCorrect: false }))
+      options: updateQuestionDto.options.map(option => ({ text: option, isCorrect: false })),
+      difficulty: updateQuestionDto.difficulty as Difficulty
     };
     return this.questionService.updateQuestion(id, updateData);
   }

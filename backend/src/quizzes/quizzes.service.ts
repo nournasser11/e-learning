@@ -65,27 +65,38 @@ export class QuizzesService {
   }
 
   async submitQuizResponse(userId: string, quizId: string, answers: any[]): Promise<{ response: Response, feedback: any[] }> {
-    // Calculate score
     const quiz = await this.quizModel.findById(quizId).exec();
     if (!quiz) {
       throw new Error('Quiz not found');
     }
-
+  
     let score = 0;
     const feedback = quiz.questions.map((question, index) => {
-      const isCorrect = question.correctAnswer === answers[index];
+      let isCorrect = false;
+      let userAnswer = answers[index];
+  
+      // For MCQ questions, compare the selected option
+      if (question.type === 'MCQ') {
+        isCorrect = question.options.some(option => option.isCorrect && option.text === userAnswer);
+      }
+  
+      // For Short Answer or Fill in the Blank, check the exact match
+      if (['Short Answer', 'Fill in the Blank'].includes(question.type)) {
+        isCorrect = userAnswer.trim().toLowerCase() === question.correctAnswer?.trim().toLowerCase();
+      }
+  
       if (isCorrect) {
         score += 1;
       }
+  
       return {
-        question: question.questionText,
-        correctAnswer: question.correctAnswer,
-        userAnswer: answers[index],
+        question: question.text,
+        correctAnswer: question.correctAnswer || question.options?.find(option => option.isCorrect)?.text,
+        userAnswer,
         isCorrect,
       };
     });
-
-    // Save response
+  
     const response = new this.responseModel({
       responseId: `response_${userId}_${quizId}`,
       userId,
@@ -94,9 +105,12 @@ export class QuizzesService {
       score,
       submittedAt: new Date(),
     });
-
+  
     await response.save();
-
     return { response, feedback };
   }
+  
+
+    // Save response
+   
 }
