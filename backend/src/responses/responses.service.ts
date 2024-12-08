@@ -8,7 +8,7 @@ import { CreateResponseDto } from '../dto/create-response.dto';
 export class ResponsesService {
   constructor(
     @InjectModel(Response.name) private responseModel: Model<Response>,
-  ) {}
+  ) { }
 
   async create(createResponseDto: CreateResponseDto): Promise<Response> {
     const response = new this.responseModel(createResponseDto);
@@ -29,6 +29,7 @@ export class ResponsesService {
 
   async update(id: string, updateResponseDto: Partial<Response>): Promise<Response | null> {
     return this.responseModel.findByIdAndUpdate(id, updateResponseDto, { new: true }).exec();
+
   }
 
   async remove(id: string): Promise<void> {
