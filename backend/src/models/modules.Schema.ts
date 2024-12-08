@@ -25,6 +25,15 @@ export class Module {
 
   @Prop()
   updatedAt?: Date;
+  @Prop({ type: [{ type: String, ref: 'Course' }] })
+  courses: string[];
+  @Prop({ type: Number, default: 1 })
+  version: number;
+
+  // Optional: store previous versions
+  @Prop({ type: Array, default: [] })
+  previousVersions: { title: string; content: string; updatedAt: Date }[];
 }
+
 
 export const ModuleSchema = SchemaFactory.createForClass(Module);

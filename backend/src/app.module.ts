@@ -1,4 +1,5 @@
-import { Module,Logger } from '@nestjs/common';
+import { Module, Logger } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersService } from './users/users.service';
@@ -50,6 +51,10 @@ import { NotesModule } from './notes/notes.module';
         };
       },
       inject:[ConfigService],
+    }),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'default_secret',
+      signOptions: { expiresIn: '1h' },
     }),
     UsersModule,QuizzesModule,CourseModule,
     ResponsesModule,ProgressModule,AdminModule,

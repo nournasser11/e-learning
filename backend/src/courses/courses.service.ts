@@ -2,7 +2,9 @@ import { Injectable, HttpException, HttpStatus, NotFoundException, ConflictExcep
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Course, CourseDocument } from '../models/courses.Schema';
-
+import { Request } from 'express';
+import { Multer } from 'multer';
+import { Progress } from '../models/progress.Schema';
 @Injectable()
 export class CoursesService {
   constructor(
@@ -90,31 +92,5 @@ export class CoursesService {
       }
       return course;
     }
-    async assignUserToCourse(courseId: string, userId: string): Promise<Course> {
-      // Find the course by courseId
-      const course = await this.courseModel.findOne({ courseId });
-  
-      if (!course) {
-        throw new NotFoundException(`Course with ID ${courseId} not found`);
-      }
-  
-      // Check if user is already assigned to this course
-      if (course.assignedUsers.includes(userId)) {
-        throw new ConflictException('User is already assigned to this course');
-      }
-  
-      // Add user to assignedUsers array
-      course.assignedUsers.push(userId);
-  
-      // Optionally, you might want to update the enrolled students count
-      course.enrolledStudents += 1;
-  
-      // Save the updated course
-      await course.save();
-  
-      return course;
-    }
-
-
   } 
   
