@@ -14,6 +14,6 @@ export class ProgressController {
 
     @Get('instructor/:courseId')
     getInstructorAnalytics(@Param('courseId') courseId: string) {
-        return this.progressService.getInstructorAnalytics();
+        return this.progressService.getInstructorAnalytics(courseId);
     }
 }

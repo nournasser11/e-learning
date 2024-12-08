@@ -2,7 +2,9 @@ import { Injectable, HttpException, HttpStatus, NotFoundException } from '@nestj
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Course, CourseDocument } from '../models/courses.Schema';
-
+import { Request } from 'express';
+import { Multer } from 'multer';
+import { Progress } from '../models/progress.Schema';
 @Injectable()
 export class CoursesService {
   constructor(
@@ -91,6 +93,54 @@ export class CoursesService {
         throw new NotFoundException(`Course with ID ${courseId} not found`);
       }
       return course;
+    }
+    async updateCourseVersion(courseId: string, updateData: Partial<Course>): Promise<Course> {
+      const course = await this.courseModel.findOne({ courseId }).exec();
+      if (!course) {
+        throw new NotFoundException('Course not found');
+      }
+  
+      // Store the previous version
+      course.previousVersions.push({
+        title: course.title,
+        description: course.description,
+        updatedAt: course.updatedAt,
+      });
+  
+      // Increment the version number
+      course.version += 1;
+  
+      // Update the course
+      Object.assign(course, updateData);
+      return course.save();
+    }
+    async uploadCourseResources(courseId: string, files: Express.Multer.File[]): Promise<Course> {
+      const course = await this.courseModel.findOne({ courseId }).exec();
+      if (!course) {
+        throw new NotFoundException('Course not found');
+      }
+  
+      // Assuming files are stored locally, store their paths
+      const resourcePaths = files.map(file => `/uploads/${file.filename}`);
+      course.resources = [...course.resources, ...resourcePaths];
+      return course.save();
+    }
+    async searchCourses(query: string): Promise<Course[]> {
+      return this.courseModel.find({
+        $or: [
+          { title: { $regex: query, $options: 'i' } },
+          { description: { $regex: query, $options: 'i' } },
+          { category: { $regex: query, $options: 'i' } },
+        ],
+      }).exec();
+    }
+    async updateStudentProgress(userId: string, courseId: string, percentage: number): Promise<Progress> {
+      const progress = await this.progressModel.findOneAndUpdate(
+        { userId, courseId },
+        { completionPercentage: percentage, completed: percentage === 100 },
+        { new: true, upsert: true },
+      ).exec();
+      return progress;
     }
   } 
   

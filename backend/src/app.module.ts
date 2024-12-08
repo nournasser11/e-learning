@@ -1,4 +1,5 @@
-import { Module,Logger } from '@nestjs/common';
+import { Module, Logger } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersService } from './users/users.service';
@@ -18,8 +19,6 @@ import { ResponsesController } from './responses/responses.controller';
 import { ResponsesService } from './responses/responses.service';
 import { ProgressController } from './progress/progress.controller';
 import { ProgressService } from './progress/progress.service';
-import { UserInteractionsController } from './user_interactions/user_interactions.controller';
-import { UserInteractionsService } from './user_interactions/user_interactions.service';
 import { ModuleController } from './module/module-course.controller';
 import { ModuleService } from './module/module-course.service';
 import { UsersModule } from './users/users.module';
@@ -45,13 +44,17 @@ import { NotesModule } from './notes/notes.module';
       imports: [ConfigModule],
       useFactory: async () => {
         // Hardcoded URI for debugging purposes
-        const uri = 'mongodb+srv://nournasser1556:nournasser@cluster0.7ptut.mongodb.net/';
+        const uri = 'mongodb+srv://nournasser1556:nournasser@cluster0.7ptut.mongodb.net/ProjectSW';
         Logger.log('Hardcoded MongoDB URI: ${uri}');
         return {
           uri,
         };
       },
       inject:[ConfigService],
+    }),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET || 'default_secret',
+      signOptions: { expiresIn: '1h' },
     }),
     UsersModule,QuizzesModule,CourseModule,
     ResponsesModule,ProgressModule,AdminModule,

@@ -20,6 +20,11 @@ export class Progress {
 
   @Prop({ default: Date.now })
   lastAccessed: Date;
+  @Prop({ default: false })
+  completed: boolean;
+  @Prop({ required: true })
+  quizId: string; 
+
 }
 
 export const ProgressSchema = SchemaFactory.createForClass(Progress);
