@@ -1,8 +1,11 @@
+
 import { Controller, Post, Get, Put, Delete, Param, Body, Query } from '@nestjs/common';
 import { NotesService } from './notes.service';
-import { CreateNoteDto, UpdateNoteDto} from '../dto/quick-notes.dto';
+import { CreateNoteDto } from 'src/dto/create-note.dto';
+import { UpdateNoteDto } from 'src/dto/update-note.dto';
 import { Note } from '../models/notes.Schema';
 import { query } from 'express';
+
 
 @Controller('notes')
 export class NotesController {
@@ -18,24 +21,24 @@ export class NotesController {
     return this.notesService.findAll(userId);
   }
 
-  @Get(':id')
-async findOne(@Param('id') id: string,
+  @Get(':noteId')
+async findOne(@Param('noteId') noteId: string,
   @Query('userId') userId:string
 ): Promise<Note> {
-  return this.notesService.findOne(id,userId);
+  return this.notesService.findOne(noteId,userId);
 }
 
-  @Put(':id')
+  @Put(':noteId')
   async update(
-    @Param('id') id: string,
+    @Param('noteId') noteId: string,
     @Body() updateNoteDto: UpdateNoteDto,
     @Query('userId') userId: string,
   ): Promise<Note> {
-    return this.notesService.update(id, updateNoteDto, userId);
+    return this.notesService.update(noteId, updateNoteDto, userId);
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: string, @Query('userId') userId: string): Promise<Note> {
-    return this.notesService.remove(id, userId);
+  @Delete(':noteId')
+  async remove(@Param('noteId') noteId: string, @Query('userId') userId: string): Promise<Note> {
+    return this.notesService.remove(noteId, userId);
   }
 }
