@@ -3,7 +3,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersService } from './users/users.service';
-import { AdminModule } from './admin/admin.module';
 import { CourseModule } from './courses/courses.module';
 import { ModulesModule } from './module/module-course.module';
 import { QuizzesModule } from './quizzes/quizzes.module';
@@ -57,7 +56,7 @@ import { NotesModule } from './notes/notes.module';
       signOptions: { expiresIn: '1h' },
     }),
     UsersModule,QuizzesModule,CourseModule,
-    ResponsesModule,ProgressModule,AdminModule,
+    ResponsesModule,ProgressModule,
     QuestionModule,ModulesModule,ChatModule,NotesModule
   ],
   controllers: [AppController],

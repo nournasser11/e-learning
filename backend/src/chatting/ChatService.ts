@@ -17,7 +17,7 @@ export class ChatService {
       const newMessage = new this.messageModel(messageData);
       return await newMessage.save();
     } catch (error) {
-      throw new Error(`Failed to save message: ${error.message}`);
+      throw new Error(`Failed to save message: ${(error as Error).message}`);
     }
   }
 
@@ -33,7 +33,7 @@ export class ChatService {
         .sort({ createdAt: -1 }) // Sort by most recent
         .exec();
     } catch (error) {
-      throw new Error(`Failed to retrieve chat history: ${error.message}`);
+      throw new Error(`Failed to retrieve chat history: ${(error as Error).message}`);
     }
   }
 
@@ -59,7 +59,7 @@ export class ChatService {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new Error(`Failed to mark message as read: ${error.message}`);
+      throw new Error(`Failed to mark message as read: ${(error as Error).message}`);
     }
   }
 

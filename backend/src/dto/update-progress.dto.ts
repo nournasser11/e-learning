@@ -5,5 +5,7 @@ export class UpdateProgressDto {
     @IsNumber()
     @Min(0)
     @Max(100)
-    completionPercentage?: number;
+    
+    readonly completionPercentage?: number;
+  readonly lastAccessed?: Date;
 }

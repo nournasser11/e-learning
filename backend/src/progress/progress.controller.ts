@@ -15,7 +15,7 @@ export class ProgressController {
         @Param('userId') userId: string,
         @Param('courseId') courseId: string,
     ) {
-        return this.progressService.getStudentProgress(userId, courseId);
+        return this.progressService.getStudentProgress(userId);
     }
 
     @Post()

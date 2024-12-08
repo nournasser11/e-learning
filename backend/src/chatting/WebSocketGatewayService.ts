@@ -56,7 +56,7 @@ export class WebSocketGatewayService implements OnGatewayInit, OnGatewayConnecti
       // Save the message to the database
       await this.chatService.saveMessage({ senderId, receiverId, content: message });
     } catch (error) {
-      this.logger.error(`Error while sending message: ${error.message}`);
+      this.logger.error(`Error while sending message: ${(error as Error).message}`);
     }
   }
 }

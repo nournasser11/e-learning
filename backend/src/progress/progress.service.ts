@@ -3,7 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Progress } from '../models/progress.Schema';
 import{ Response,ResponseDocument } from '../models/responses.Schema';
-
+import { CreateProgressDto } from '../dto/create-progress.dto';
+import { UpdateProgressDto } from '../dto/update-progress.dto';
 @Injectable()
 export class ProgressService {
     constructor(
@@ -82,5 +83,25 @@ async getInstructorAnalytics(courseId: string) {
             completionPercentage: p.completionPercentage,
             lastAccessed: p.lastAccessed,
         }));
+    }
+    async createProgress(createProgressDto: CreateProgressDto): Promise<Progress> {
+      const createdProgress = new this.progressModel(createProgressDto);
+      return createdProgress.save();
+    }
+    async updateStudentProgress(userId: string, courseId: string, updateProgressDto: UpdateProgressDto): Promise<Progress> {
+      // Find the progress record by userId and courseId
+      const progress = await this.progressModel.findOne({ userId, courseId }).exec();
+  
+      // If the progress record exists, update it
+      if (progress) {
+        progress.completionPercentage = updateProgressDto.completionPercentage || progress.completionPercentage;
+        progress.lastAccessed = updateProgressDto.lastAccessed || progress.lastAccessed;
+  
+        // Save the updated progress
+        return progress.save();
+      } else {
+        // If the progress record does not exist, throw an error
+        throw new Error('Progress record not found');
+      }
     }
 }
