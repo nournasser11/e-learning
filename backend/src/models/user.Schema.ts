@@ -6,6 +6,9 @@ export type UserDocument = User & Document;
 
 @Schema({ timestamps: true })
 export class User extends Document {
+  @Prop({ required: true, minlength: 3 })
+name: string;
+
   @Prop({ type: String, default: () => new mongoose.Types.ObjectId() }) // Automatically generated ID
   userId: string;
 

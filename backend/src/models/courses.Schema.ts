@@ -17,7 +17,7 @@ export class Course {
   @Prop({ required: true })
   category: string;
 
-  @Prop({ required: true, enum: ['Beginner', 'Intermediate', 'Advanced'] })
+  @Prop({ required: true, enum: ['easy', 'medium', 'hard'] })
   difficultyLevel: string;
 
   @Prop({ required: true })
@@ -34,6 +34,9 @@ export class Course {
 
   @Prop({ type: [Number], default: [] })
   ratings: number[];
+  
+  @Prop({ type: [String], default: [] })
+  assignedUsers: string[];
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);

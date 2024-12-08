@@ -43,7 +43,7 @@ import { NotesModule } from './notes/notes.module';
       imports: [ConfigModule],
       useFactory: async () => {
         // Hardcoded URI for debugging purposes
-        const uri = 'mongodb+srv://nournasser1556:nournasser@cluster0.7ptut.mongodb.net/';
+        const uri = 'mongodb+srv://nournasser1556:nournasser@cluster0.7ptut.mongodb.net/ProjectSW';
         Logger.log('Hardcoded MongoDB URI: ${uri}');
         return {
           uri,

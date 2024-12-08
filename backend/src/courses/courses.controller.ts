@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, BadRequestException } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { Course } from 'src/models/courses.Schema';
 
@@ -72,5 +72,17 @@ export class CourseController {
     @Param('moduleId') moduleId: string,
   ): Promise<Course> {
     return await this.courseService.addModuleToCourse(courseId, moduleId);
+  }
+
+  @Post(':courseId/assign')
+  async assignUserToCourse(
+    @Param('courseId') courseId: string,
+    @Body('userId') userId: string,
+  ): Promise<Course> {
+    if (!userId) {
+      throw new BadRequestException('User ID is required');
+    }
+
+    return this.courseService.assignUserToCourse(courseId, userId);
   }
 }
