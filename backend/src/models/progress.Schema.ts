@@ -5,9 +5,9 @@ export type ProgressDocument = Progress & Document;
 
 @Schema({ timestamps: true })
 export class Progress {
-  @Prop({ required: true })
+  @Prop({ unique: true })
   progressId: string;
-  
+
 
   @Prop({ required: true })
   userId: string;
@@ -15,11 +15,12 @@ export class Progress {
   @Prop({ required: true })
   courseId: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, min: 0, max: 100 })
   completionPercentage: number;
 
-  @Prop({ default: Date.now })
+  @Prop({ default: Date.now, required: true })
   lastAccessed: Date;
 }
+
 
 export const ProgressSchema = SchemaFactory.createForClass(Progress);
