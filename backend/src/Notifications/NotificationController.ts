@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
-import { NotificationService } from './notification.service';
-import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
-import { Notification } from '../models/notification.schema';
+import { NotificationService } from './NotificationService';
+import { CreateNotificationDto } from './DTO/CreateNotificationDTO';
+import { UpdateNotificationDto } from './DTO/UpdateNotificationDto';
+import { Notification } from './NotificationSchema';
 
 @Controller('notifications')
 export class NotificationController {
