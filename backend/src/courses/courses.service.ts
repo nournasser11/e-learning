@@ -1,96 +1,56 @@
-import { Injectable, HttpException, HttpStatus, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Course, CourseDocument } from '../models/courses.Schema';
-import { Request } from 'express';
-import { Multer } from 'multer';
-import { Progress } from '../models/progress.Schema';
+import { CreateCourseDto } from '../dto/create-course.dto';
+
+
 @Injectable()
-export class CoursesService {
-  constructor(
-    @InjectModel(Course.name) private courseModel: Model<CourseDocument>,
-    @InjectModel('Progress') private progressModel: Model<any>
-  ) {}
+export class CourseService {
+    constructor(@InjectModel(Course.name) private courseModel: Model<CourseDocument>) {}
 
-  // Create a new course
-  async create(createCourseDto: any): Promise<Course> {
-    const createdCourse = new this.courseModel(createCourseDto);
-    return createdCourse.save();
+    async create(createCourseDto: CreateCourseDto): Promise<Course> {
+      const newCourse = new this.courseModel(createCourseDto); // Mongo will generate _id for courseId
+      return newCourse.save();
+    }
+    
+
+    async findAll(): Promise<Course[]> {
+        return this.courseModel.find().exec();
+    }
+
+    async findOne(id: string): Promise<Course> {
+        return this.courseModel.findById(id).exec();
+    }
+
+
+    async remove(id: string): Promise<Course> {
+        return this.courseModel.findByIdAndDelete(id).exec();
+    }
+
+    async markAsDeleted(id: string): Promise<Course> {
+      return this.courseModel.findByIdAndUpdate(
+          id,
+          { status: 'deleted' },
+          { new: true }
+      ).exec();
   }
 
-  // Get all courses
-  async findAll(): Promise<Course[]> {
-    return this.courseModel.find().exec();
+   // Method to search courses by title
+   async searchByTitle(title: string): Promise<Course[]> {
+    const regex = new RegExp(title, 'i');  // Create a case-insensitive regex pattern
+    return this.courseModel.find({ title: { $regex: regex } }).exec();  // Search courses by title
   }
 
-  // Get a course by its ID
-  async findOne(courseId: string): Promise<Course | null> {
-    return this.courseModel.findOne({ courseId }).exec();
+  // Method to get count of students who completed courses by instructorId
+  async getCompletedCoursesByInstructor(instructorId: string) {
+    return this.courseModel.aggregate([
+      { $match: { instructor: new Types.ObjectId(instructorId) } },  // Match courses for a specific instructor
+      { $project: { title: 1, completedStudents: 1 } },  // Project the title and completed students fields
+      { $addFields: { completedCount: { $size: { $ifNull: ["$completedStudents", []] } } } },  // Add a new field `completedCount` to store the count of completed students
+      { $sort: { completedCount: -1 } },  // Sort by completedCount in descending order
+      { $project: { title: 1, completedCount: 1 } }  // Only return the title and completedCount fields
+    ]);
   }
 
-  async updateCourse(courseId: string, updateData: Partial<Course>): Promise<Course | null> {
-    return this.courseModel.findByIdAndUpdate(courseId, updateData, { new: true }).exec();
-  }
-  
-
-   // Delete a course
-   async deleteCourse(id: string): Promise<void> {
-    const result = await this.courseModel.findByIdAndDelete(id).exec();
-    if (!result) {
-      throw new HttpException('Course not found', HttpStatus.NOT_FOUND);
-    }
-  }
-  
-    async findNumberOfEnrolledStudents(courseId: string): Promise<number> {
-      const course = await this.courseModel.findOne({ courseId }).exec();
-      return course ? course.enrolledStudents : 0;
-    }
-  
-    async findNumberOfStudentsByPerformance(courseId: string, performance: string): Promise<number> {
-      const performanceRange = this.getPerformanceRange(performance);
-      const students = await this.progressModel.find({
-        courseId,
-        completionPercentage: { $gte: performanceRange.min, $lt: performanceRange.max },
-      }).exec();
-      return students.length;
-    }
-  
-    async rateCourse(courseId: string, rating: number): Promise<Course> {
-      const course = await this.courseModel.findOne({ courseId }).exec();
-      if (!course) {
-        throw new Error('Course not found');
-      }
-      course.ratings.push(rating);
-      return course.save();
-    }
-  
-    async findNumberOfStudentsCompletedCourse(courseId: string): Promise<number> {
-      const course = await this.courseModel.findOne({ courseId }).exec();
-      return course ? course.completedStudents : 0;
-    }
-  
-    private getPerformanceRange(performance: string): { min: number; max: number } {
-      switch (performance) {
-        case 'low':
-          return { min: 0, max: 50 };
-        case 'medium':
-          return { min: 50, max: 80 };
-        case 'high':
-          return { min: 80, max: 100 };
-        default:
-          throw new Error('Invalid performance measure');
-      }
-    }
-    async addModuleToCourse(courseId: string, moduleId: string): Promise<Course> {
-      const course = await this.courseModel.findOneAndUpdate(
-        { courseId },
-        { $push: { modules: moduleId } },
-        { new: true },
-      );
-      if (!course) {
-        throw new NotFoundException(`Course with ID ${courseId} not found`);
-      }
-      return course;
-    }
-  } 
-  
+}
