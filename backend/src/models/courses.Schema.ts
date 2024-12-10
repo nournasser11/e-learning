@@ -1,42 +1,51 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
 export type CourseDocument = Course & Document;
 
+enum CourseStatus {
+  VALID = 'valid',
+  INVALID = 'invalid',
+  DELETED = 'deleted'
+}
+
 @Schema({ timestamps: true })
 export class Course {
-  @Prop({ required: true })
-  courseId: string;
+
+  @Prop({  unique: true })
+  courseId!: string;
 
   @Prop({ required: true })
-  title: string;
+  title!: string;
 
   @Prop({ required: true })
-  description: string;
+  description!: string;
 
-  @Prop({ required: true })
-  category: string;
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: "User", required: true })
+  instructor!: MongooseSchema.Types.ObjectId; 
 
-  @Prop({ required: true, enum: ['easy', 'medium', 'hard'] })
-  difficultyLevel: string;
+  @Prop({ type: String, enum: ['easy', 'medium', 'hard'], required: true })
+  difficultyLevel!: string; 
 
-  @Prop({ required: true })
-  createdBy: string;
+  @Prop({ default: 1 })
+  version!: number;
 
-  @Prop({ default: Date.now })
-  createdAt: Date;
+  @Prop({ type: String, enum: Object.values(CourseStatus), default: CourseStatus.VALID })
+  status!: CourseStatus;
 
-  @Prop({ default: 0 })
-  enrolledStudents: number;
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+  assignedStudents: Types.ObjectId[];
 
-  @Prop({ default: 0 })
-  completedStudents: number;
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+  completedStudents: Types.ObjectId[];
 
-  @Prop({ type: [String], default: [] })
-  assignedUsers: string[];
-
-  @Prop({ type: [Number], default: [] })
-  ratings: number[];
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
+
+// Pre-save hook to set `courseId` equal to `_id`
+CourseSchema.pre('save', function (next) {
+  this.courseId = this._id.toString();  // Assign `courseId` to `_id`
+  next();
+});
+
