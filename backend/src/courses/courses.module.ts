@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { CoursesService } from './courses.service';
-import { CoursesController } from './courses.controller';
+import { CourseService } from './courses.service';
+import { CourseController } from './courses.controller';
 import { Course, CourseSchema } from '../models/courses.schema';
 import { Progress, ProgressSchema } from '../models/progress.schema';
 
@@ -10,7 +10,7 @@ import { Progress, ProgressSchema } from '../models/progress.schema';
     MongooseModule.forFeature([{ name: Course.name, schema: CourseSchema }]),
     MongooseModule.forFeature([{ name: Progress.name, schema: ProgressSchema }]),
   ],
-  controllers: [CoursesController],
-  providers: [CoursesService],
+  controllers: [CourseController],
+  providers: [CourseService],
 })
 export class CourseModule {}
