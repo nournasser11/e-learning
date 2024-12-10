@@ -1,72 +1,50 @@
+import { Controller, Get, Post, Put, Delete, Body, Param, Query  } from '@nestjs/common';
+import { CourseService } from './courses.service';
+import { Course } from '../models/courses.Schema';
+import { CreateCourseDto} from '../dto/create-course.dto';
 
-import { CoursesService } from './courses.service';
-import { Course } from 'src/models/courses.Schema';
-import { Controller, Post,Get,Put,Delete, UseInterceptors, UploadedFiles, Body, Param, Query } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
 @Controller('courses')
-export class CoursesController {
-  constructor(private readonly coursesService: CoursesService) {}
+export class CourseController {
+    constructor(private readonly courseService: CourseService) {}
+    
+    // add new course(working) 
+    @Post()
+    async create(@Body() createCourseDto: CreateCourseDto): Promise<Course> {
+      return this.courseService.create(createCourseDto);
+    }
 
-  // Create a new course
-  @Post()
-  async create(@Body() createCourseDto: any) {
-    return this.coursesService.create(createCourseDto);
-  }
 
-  // Get all courses
-  @Get()
-  async findAll() {
-    return this.coursesService.findAll();
-  }
+    // get all courses(working)
+    @Get()
+    async findAll(): Promise<Course[]> {
+        return this.courseService.findAll();
+    }
 
-  // Get a course by courseId
-  @Get(':courseId')
-  async findOne(@Param('courseId') courseId: string) {
-    return this.coursesService.findOne(courseId);
-  }
+    // get course by id(working)
+    @Get('/Cbyid/:id')
+    async findOne(@Param('id') id: string): Promise<Course> {
+        return this.courseService.findOne(id);
+    }
 
-  // Update a course
-  @Put(':courseId')
-  async update(
-    @Param('courseId') courseId: string,
-    @Body() updateCourseDto: any,
-  ) {
-    return this.coursesService.updateCourse(courseId, updateCourseDto);
-  }
 
-  // Delete a course
-  @Delete(':courseId')
-  async remove(@Param('courseId') courseId: string) {
-    return this.coursesService.deleteCourse(courseId);
-  }
-  @Get(':courseId/enrolled-students')
-  findNumberOfEnrolledStudents(@Param('courseId') courseId: string) {
-    return this.coursesService.findNumberOfEnrolledStudents(courseId);
+    // update course satus to deleted (working)
+    @Put('/delete/:id')
+    async markAsDeleted(@Param('id') id: string): Promise<Course> {
+        return this.courseService.markAsDeleted(id);
+    }
+
+    // search that when a user enters a title, it returns all courses that contain that title(working)
+    @Get('search')
+    async search(@Query('title') title: string): Promise<Course[]> {
+    return this.courseService.searchByTitle(title);
   }
 
-  @Get(':courseId/students-by-performance/:performance')
-  findNumberOfStudentsByPerformance(
-    @Param('courseId') courseId: string,
-    @Param('performance') performance: string,
-  ) {
-    return this.coursesService.findNumberOfStudentsByPerformance(courseId, performance);
+  // get count of students who completed courses by instructorId(working)
+  @Get('completed/:instructorId')
+  async getCompletedCoursesByInstructor(@Param('instructorId') instructorId: string) {
+    return this.courseService.getCompletedCoursesByInstructor(instructorId);
   }
 
-  @Post(':id/rate')
-  async rateCourse(@Param('id') courseId: string, @Body('rating') rating: number): Promise<Course> {
-    return this.coursesService.rateCourse(courseId, rating);
-  }
+  
 
-  @Get(':courseId/completed-students')
-  findNumberOfStudentsCompletedCourse(@Param('courseId') courseId: string) {
-    return this.coursesService.findNumberOfStudentsCompletedCourse(courseId);
-  }
-
-  @Put(':courseId/modules/:moduleId')
-  async addModuleToCourse(
-    @Param('courseId') courseId: string,
-    @Param('moduleId') moduleId: string,
-  ): Promise<Course> {
-    return await this.coursesService.addModuleToCourse(courseId, moduleId);
-  }
 }
