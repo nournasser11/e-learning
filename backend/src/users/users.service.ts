@@ -7,7 +7,7 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { LoginUserDto } from '../dto/login-user.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from '../auth/jwt-payload.interface'; // Define this interface to match the JWT payload structure
+import { JwtPayload } from '../auth/jwt-payload.interface';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +16,7 @@ export class UsersService {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   // Create a new user
   async create(createUserDto: RegisterUserDto): Promise<User> {
@@ -86,5 +86,14 @@ export class UsersService {
     const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' }); // Token expires in 1 hour
 
     return { accessToken };
+  }
+
+  // Validate user credentials
+  async validateUser(email: string, password: string): Promise<User | null> {
+    const user = await this.userModel.findOne({ email }).exec();
+    if (user && await bcrypt.compare(password, user.passwordHash)) {
+      return user;
+    }
+    return null;
   }
 }
