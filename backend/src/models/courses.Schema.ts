@@ -24,8 +24,6 @@ export class Course {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: "User", required: true })
   instructor!: MongooseSchema.Types.ObjectId; 
 
-  @Prop({ type: String, enum: ['easy', 'medium', 'hard'], required: true })
-  difficultyLevel!: string; 
 
   @Prop({ default: 1 })
   version!: number;
@@ -38,6 +36,8 @@ export class Course {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   completedStudents: Types.ObjectId[];
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Module' }], default: [] })
+  modules: Types.ObjectId[]
 
 }
 

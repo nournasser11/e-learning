@@ -10,10 +10,6 @@ export class CreateCourseDto {
   @IsNotEmpty()
   description: string;
 
-  @IsEnum(['easy', 'medium', 'hard'])
-  @IsNotEmpty()
-  difficultyLevel: string;
-
   @IsString()
   @IsNotEmpty()
   instructor: string;

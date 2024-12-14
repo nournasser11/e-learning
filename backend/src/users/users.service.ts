@@ -1,13 +1,13 @@
-import { Injectable, Logger, UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../models/user.schema';
-import { CreateUserDto } from '../dto/create-user.dto';
+import { RegisterUserDto } from '../dto/register-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { LoginUserDto } from '../dto/login-user.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from '../auth/jwt-payload.interface'; // You may need to create this
+import { JwtPayload } from '../auth/jwt-payload.interface'; // Define this interface to match the JWT payload structure
 
 @Injectable()
 export class UsersService {
@@ -19,7 +19,7 @@ export class UsersService {
   ) {}
 
   // Create a new user
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: RegisterUserDto): Promise<User> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const newUser = new this.userModel({
       ...createUserDto,
@@ -41,16 +41,30 @@ export class UsersService {
     return this.userModel.findById(id).exec();
   }
 
-  // Update user info
+  // Update user info, particularly password
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const isPasswordValid = await bcrypt.compare(updateUserDto.currentPassword, updateUserDto.newPassword);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Old password is incorrect');
+    if (updateUserDto.newPassword && updateUserDto.currentPassword) {
+      const user = await this.userModel.findById(id).exec();
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      const isPasswordValid = await bcrypt.compare(updateUserDto.currentPassword, user.passwordHash);
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Current password is incorrect');
+      }
+
+      const hashedNewPassword = await bcrypt.hash(updateUserDto.newPassword, 10);
+      user.passwordHash = hashedNewPassword;
+      return user.save();
     }
-    if (updateUserDto.currentPassword) {
-      updateUserDto.newPassword = await bcrypt.hash(updateUserDto.newPassword, 10);
-    }
-    return this.userModel.findByIdAndUpdate(id, updateUserDto, { new: true }).exec();
+
+    // Update other fields as necessary
+    return this.userModel.findByIdAndUpdate(id, {
+      name: updateUserDto.name,
+      email: updateUserDto.email,
+      // Other fields can be updated here
+    }, { new: true }).exec();
   }
 
   // Delete a user (Admin role only)
@@ -64,7 +78,7 @@ export class UsersService {
     const user = await this.userModel.findOne({ email }).exec();
 
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-      this.logger.warn(`Failed login attempt for email: ${email}`)
+      this.logger.error(`Failed login attempt for email: ${email}`);
       throw new UnauthorizedException('Invalid credentials');
     }
 
@@ -72,28 +86,5 @@ export class UsersService {
     const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' }); // Token expires in 1 hour
 
     return { accessToken };
-  }
-
-  // Get user profile by ID (Authenticated users only)
-  async getProfile(id: string): Promise<User> {
-    return this.userModel.findById(id).exec();
-  }
-
-  // Validate if the user has the required role
-  async hasRole(userId: string, requiredRole: string): Promise<boolean> {
-    const user = await this.userModel.findById(userId).exec();
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-    return user.role === requiredRole;
-  }
-
-  // Check if the current user is an Admin (for RBAC purposes)
-  async isAdmin(userId: string): Promise<boolean> {
-    const user = await this.userModel.findById(userId).exec();
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-    return user.role === 'admin';
   }
 }
