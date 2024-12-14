@@ -8,4 +8,6 @@ export class LoginUserDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+ 
+
 }

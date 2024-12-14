@@ -9,34 +9,67 @@ import { Roles } from '../auth/roles.decorator';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
+  // Register a new user
   @Post('register')
   async register(@Body() registerUserDto: RegisterUserDto) {
-    return this.usersService.create(registerUserDto);
-  }
-
-  @Post('login')
-  async login(@Body() loginUserDto: LoginUserDto) {
-    const user = await this.usersService.validateUser(loginUserDto.email, loginUserDto.password);
-    if (!user) {
-      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+    try {
+      const user = await this.usersService.create(registerUserDto);
+      return { message: 'User registered successfully', user };
+    } catch (error) {
+      throw new HttpException(
+        (error as any).message || 'Error registering user',
+        HttpStatus.BAD_REQUEST,
+      );
     }
-    const payload = { email: user.email, sub: user._id.toString(), role: user.role };
-    const accessToken = this.usersService.login(loginUserDto);
-    return { message: 'Login successful', accessToken };
   }
 
+  // Login user
+  @Post('login')
+async login(@Body() loginUserDto: LoginUserDto) {
+  const { email, password } = loginUserDto;
+  const { accessToken, role } = await this.usersService.login(email, password);
+  
+  return {
+    message: 'Login successful',
+    accessToken,
+    role, // Include the role in the response
+  };
+}
+
+
+  // Get user profile by ID
   @Get('profile/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   async getProfile(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+    try {
+      const user = await this.usersService.findOne(id);
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      return user;
+    } catch (error) {
+      throw new HttpException(
+        (error as any).message || 'Error fetching profile',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
+  // Update user profile
   @Post('update/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'instructor') // Example: Allow only admins and instructors to update profiles
+  @Roles('admin', 'instructor') // Only admins and instructors can update profiles
   async updateProfile(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+    try {
+      const updatedUser = await this.usersService.update(id, updateUserDto);
+      return { message: 'Profile updated successfully', updatedUser };
+    } catch (error) {
+      throw new HttpException(
+        (error as any).message || 'Error updating profile',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 }

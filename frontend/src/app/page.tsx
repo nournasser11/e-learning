@@ -1,44 +1,19 @@
 "use client";
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { login } from '../utils/api'
 
-const LoginPage: React.FC = () => {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+import React from 'react';
+import Layout from '../components/Layout';
+import Button from '../components/Button';
 
-  const handleLogin = async () => {
-    try {
-      const success = await login({ email, password });
-      if (success) {
-        router.push('/dashboard');
-      } else {
-        alert('Login failed');
-      }
-    } catch (error) {
-      alert('An error occurred during login. Please try again.');
-    }
-  };
-
+const HomePage = () => {
   return (
-    <div>
-      <h1>Login</h1>
-      <input
-        type="text"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Email"
-      />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="Password"
-      />
-      <button onClick={handleLogin}>Login</button>
-    </div>
+    <Layout>
+      <div className="container mx-auto p-4 bg-background">
+        <h1 className="text-3xl font-bold text-primary">Welcome to the E-Learning Platform</h1>
+        <p className="mt-4 text-text">Explore our courses and start learning today!</p>
+        <Button onClick={() => alert('Get Started!')} className="bg-highlight">Get Started</Button>
+      </div>
+    </Layout>
   );
 };
 
-export default LoginPage;
+export default HomePage;
