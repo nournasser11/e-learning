@@ -1,28 +1,45 @@
-import { Controller, Post, Get, Put, Delete, Param, Body, Query } from '@nestjs/common';
-import { ModuleService } from './module-course.service';
-import { Module } from '../models/modules.schema';
+import { Controller, Post, Get, Put, Param, Body } from '@nestjs/common';
+import { ModulesService } from './module-course.service';
+import { CreateModuleDto } from 'src/dto/create-module.dto';
+import { UpdateModuleDto } from 'src/dto/update-module.dto';
 
-@Controller('modules')
-export class ModuleController {
-  constructor(private readonly moduleService: ModuleService) {}
+@Controller('courses/:courseId/modules')
+export class ModulesController {
+  constructor(private readonly modulesService: ModulesService) {}
 
   @Post()
-  async createModule(@Body() createModuleDto: Partial<Module>): Promise<Module> {
-    return this.moduleService.createModule(createModuleDto);
+  async createModule(
+    @Param('courseId') courseId: string,
+    @Body() createModuleDto: Omit<CreateModuleDto, 'courseId'>
+  ) {
+    const moduleWithCourseId = { ...createModuleDto, courseId };
+    return this.modulesService.create(moduleWithCourseId);
   }
 
-  @Put(':id')
-  async updateModule(@Param('id') moduleId: string, @Body() updateModuleDto: Partial<Module>): Promise<Module> {
-    return this.moduleService.updateModule(moduleId, updateModuleDto);
+  @Post(':moduleId/generate-quiz')
+  async generateQuiz(@Param('moduleId') moduleId: string) {
+    return this.modulesService.generateQuiz(moduleId);
   }
 
-  @Post(':moduleId/courses')
-  async addCourseToModule(@Param('moduleId') moduleId: string, @Body('courseId') courseId: string): Promise<Module> {
-    return this.moduleService.addCourseToModule(moduleId, courseId);
+  @Get(':moduleId')
+  async getModuleById(
+    @Param('courseId') courseId: string,
+    @Param('moduleId') moduleId: string
+  ) {
+    return this.modulesService.findById(courseId, moduleId);
   }
 
-  @Get('search')
-  async searchModules(@Query('query') query: string): Promise<Module[]> {
-    return this.moduleService.searchModules(query);
+  @Put(':moduleId')
+  async updateModule(
+    @Param('courseId') courseId: string,
+    @Param('moduleId') moduleId: string,
+    @Body() updateModuleDto: UpdateModuleDto
+  ) {
+    return this.modulesService.update(courseId, moduleId, updateModuleDto);
+  }
+
+  @Put(':moduleId/flag')
+  async flagResource(@Param('moduleId') moduleId: string) {
+    return this.modulesService.flagResource(moduleId);
   }
 }
