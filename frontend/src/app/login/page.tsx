@@ -15,15 +15,6 @@ const LoginPage: React.FC = () => {
 
   const handleLogin = async () => {
     try {
-<<<<<<< HEAD
-      const result = await login({ email, password });
-      console.log("Login API result:", result);
-
-      if (result && result.accessToken && result.role) {
-        localStorage.setItem("token", result.accessToken);
-        localStorage.setItem("role", result.role || "unknown");
-
-=======
       const result: { accessToken: string; role: string; _id: string; name: string } = await login({ email, password }); // Call the login function with email and password
       console.log("Login API result:", result); // Debugging the API response
   
@@ -35,7 +26,6 @@ const LoginPage: React.FC = () => {
         localStorage.setItem("name", result.name); // Storing the user name
   
         // Navigate based on the role
->>>>>>> janaHagar
         if (result.role === "instructor") {
           router.push("/instructor/dashboard");
         } else if (result.role === "admin") {
@@ -53,12 +43,8 @@ const LoginPage: React.FC = () => {
       alert("An error occurred during login. Please try again.");
     }
   };
-<<<<<<< HEAD
-
-=======
   
   
->>>>>>> janaHagar
   return (
     <Layout>
       <div className="container mx-auto p-4 bg-background">

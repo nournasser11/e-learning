@@ -2,25 +2,9 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:3000'; // Replace with the actual API base URL
 
+
 // Interface for login credentials
 interface Credentials {
-<<<<<<< HEAD
-    email: string;
-    password: string;
-}
-
-// Login function
-export const login = async (data: Credentials): Promise<{ accessToken: string; role: string }> => {
-    try {
-        console.log("Data sent to API:", data); // Debug the request payload
-        const response = await axios.post(`${API_URL}/users/login`, data);
-        return response.data;
-    } catch (error) {
-        console.error("Login error:", error);
-        throw error;
-    }
-};
-=======
   email: string;
   password: string;
   role: string;
@@ -41,7 +25,6 @@ export const login = async (data: { email: string; password: string }): Promise<
     return response.json();
   };
   
->>>>>>> janaHagar
 
 // Get all courses
 export const getCourses = async (): Promise<any[]> => {
@@ -110,6 +93,29 @@ export const getCoursesByInstructor = async (instructorId: string): Promise<Cour
     throw error;
   }
 };
+
+export const SearchCourses = async (query: string): Promise<Course[]> => {
+
+    // API call to search courses
+  
+    const response = await fetch(`/api/courses/search?query=${query}`);
+  
+    const data = await response.json();
+  
+    return data.courses.map((course: any) => ({
+  
+      id: course._id,
+  
+      name: course.name,
+  
+      description: course.description,
+  
+      progress: course.progress,
+  
+    }));
+  
+  };
+  
 
 // Axios interceptor to add JWT token to all requests
 axios.interceptors.request.use(
