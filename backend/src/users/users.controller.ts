@@ -27,16 +27,18 @@ export class UserController {
 
   // Login user
   @Post('login')
-async login(@Body() loginUserDto: LoginUserDto) {
-  const { email, password } = loginUserDto;
-  const { accessToken, role } = await this.usersService.login(email, password);
-  
-  return {
-    message: 'Login successful',
-    accessToken,
-    role, // Include the role in the response
-  };
-}
+  async login(@Body() loginUserDto: LoginUserDto) {
+    const { email, password } = loginUserDto;
+    const { accessToken, role, _id, name } = await this.usersService.login(email, password);
+    
+    return {
+      message: 'Login successful',
+      accessToken,
+      role, // Include the role in the response
+      _id,  // Include the _id in the response
+      name, // Include the name in the response
+    };
+  }
 
 
   // Get user profile by ID

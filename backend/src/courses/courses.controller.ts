@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query  } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, HttpException, HttpStatus } from '@nestjs/common';
 import { CourseService } from './courses.service';
 import { Course } from '../models/courses.Schema';
 import { CreateCourseDto} from '../dto/create-course.dto';
@@ -45,6 +45,15 @@ export class CourseController {
     return this.courseService.getCompletedCoursesByInstructor(instructorId);
   }
 
-  
+  @Get('/by-instructor/:instructorId')
+  async findAllByInstructor(@Param('instructorId') instructorId: string): Promise<Course[]> {
+  try {
+    return this.courseService.findAllByInstructor(instructorId);
+  } catch (error) {
+    console.error('Failed to find courses:', error);
+    throw new HttpException('Failed to find courses', HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+}
+
 
 }
