@@ -1,58 +1,43 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import Layout from '../../../components/Layout';
+import Button from '../../../components/Button';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 
-const AdminPage: React.FC = () => {
+const AdminDashboard: React.FC = () => {
   const router = useRouter();
-  const [user, setUser] = useState<{ email: string; role: string } | null>(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          router.push('/login');
-          return;
-        }
-
-        const response = await axios.get('http://localhost:3000/users/profile', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        setUser(response.data);
-      } catch (error) {
-        console.error('Error fetching user:', error);
-        router.push('/login');
-      }
-    };
-
-    fetchUser();
-  }, [router]);
-
-  if (!user) {
-    return <div>Loading...</div>;
-  }
+  const navigateTo = (path: string) => {
+    router.push(path);
+  };
 
   return (
-    <div>
-      <h1>Admin Dashboard</h1>
-      <p>Welcome, {user.email}</p>
-      <p>Role: {user.role}</p>
-      <nav>
-        <ul>
-          <li><a href="/admin/users">Manage Users</a></li>
-          <li><a href="/admin/courses">Manage Courses</a></li>
-          <li><a href="/admin/settings">Settings</a></li>
-        </ul>
-      </nav>
-    </div>
+    <Layout>
+      <div className="container mx-auto p-4">
+        <h1 className="text-3xl font-bold text-primary mb-4">Admin Dashboard</h1>
+        <div className="flex flex-col space-y-4">
+          <Button
+            onClick={() => navigateTo('/courses')}
+            className="bg-white text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white"
+          >
+            Manage Courses
+          </Button>
+          <Button
+            onClick={() => navigateTo('/admin/manage-students')}
+            className="bg-white text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white"
+          >
+            Manage Students
+          </Button>
+          <Button
+            onClick={() => navigateTo('/admin/manage-instructors')}
+            className="bg-white text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white"
+          >
+            Manage Instructors
+          </Button>
+        </div>
+      </div>
+    </Layout>
   );
 };
 
-export default AdminPage;
-
-
-
-
-
+export default AdminDashboard;
