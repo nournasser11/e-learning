@@ -93,20 +93,25 @@ export class UsersService {
   }
 
   // Login (Generate JWT token)
-  async login(email: string, password: string): Promise<{ accessToken: string; role: string }> {
-    const user = await this.userModel.findOne({ email }).exec();
-
-    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
-      this.logger.error(`Failed login attempt for email: ${email}`);
+  async login(email: string, password: string) {
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-
-    // Role is determined from the database
-    const payload: JwtPayload = { email: user.email, sub: user._id.toString(), role: user.role };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '1h' });
-
-    this.logger.log(`User logged in with email: ${email} and role: ${user.role}`);
-    return { accessToken, role: user.role }; // Include role in the response
+  
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+  
+    const accessToken = this.jwtService.sign({ email, sub: user._id });
+  
+    return {
+      accessToken,
+      role: user.role,
+      _id: user._id,
+      name: user.name,
+    };
   }
 
   // Validate user credentials (for guards or strategies)

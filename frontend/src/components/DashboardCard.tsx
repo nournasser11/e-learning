@@ -1,8 +1,10 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 interface DashboardCardProps {
   title: string;
   description: string;
+  
 }
 
 const DashboardCard: React.FC<DashboardCardProps> = ({ title, description }) => {

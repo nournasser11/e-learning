@@ -53,4 +53,9 @@ export class CourseService {
     ]);
   }
 
-}
+  async findAllByInstructor(instructorId: string): Promise<Course[]> {
+    const courses = await this.courseModel.find({ instructor: instructorId }).exec();
+    console.log(`Courses found for instructor ${instructorId}:`, courses);
+    return courses;
+  }
+}  

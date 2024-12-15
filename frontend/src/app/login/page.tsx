@@ -3,6 +3,8 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "../../utils/api"; // Replace with the correct path to your API utility
 
+
+
 const LoginPage: React.FC = () => {
   const router = useRouter(); // For navigation
   const [email, setEmail] = useState(""); // State for email
@@ -12,13 +14,17 @@ const LoginPage: React.FC = () => {
   // The login handler function
   const handleLogin = async () => {
     try {
-      const result = await login({ email, password }); // Exclude role
-      console.log("Login API result:", result); // Debug API response
+      const result: { accessToken: string; role: string; _id: string; name: string } = await login({ email, password }); // Call the login function with email and password
+      console.log("Login API result:", result); // Debugging the API response
   
-      if (result && result.accessToken&& result.role) {
+      if (result && result.accessToken && result.role) {
+        // Store user details in localStorage
         localStorage.setItem("token", result.accessToken);
-        localStorage.setItem("role", result.role || "unknown");
+        localStorage.setItem("role", result.role);
+        localStorage.setItem("_id", result._id); // Storing the MongoDB _id
+        localStorage.setItem("name", result.name); // Storing the user name
   
+        // Navigate based on the role
         if (result.role === "instructor") {
           router.push("/instructor/dashboard");
         } else if (result.role === "admin") {
@@ -36,6 +42,7 @@ const LoginPage: React.FC = () => {
       alert("An error occurred during login. Please try again.");
     }
   };
+  
   
   return (
     <div>

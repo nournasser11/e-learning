@@ -7,11 +7,14 @@ interface Credentials {
   email: string;
   password: string;
   role: string;
+  _id: string;  
+  name: string;
+
   
 }
 
 // Login function
-export const login = async (data: { email: string; password: string }): Promise<{ accessToken: string; role: string }> => {
+export const login = async (data: { email: string; password: string }): Promise<{ accessToken: string; role: string; _id: string; name: string; }> => {
     console.log("Data sent to API:", data); // Debug the request payload
     const response = await fetch("http://localhost:3000/users/login", {
       method: "POST",
@@ -35,6 +38,26 @@ export const getCourses = async (): Promise<any[]> => {
       console.error("Get courses error:", (error as Error).message); // Log errors
     }
     throw error; // Propagate the error to the caller
+  }
+};
+
+// Interface for course
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  instructorId: string;
+  // Add other course properties as needed
+}
+
+// Get courses for instructor
+export const getCoursesByInstructor = async (instructorId: string): Promise<Course[]> => {
+  try {
+    const response = await axios.get(`http://localhost:3000/courses/by-instructor/${instructorId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching courses by instructor:', error);
+    throw error;
   }
 };
 
