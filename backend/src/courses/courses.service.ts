@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Course, CourseDocument } from '../models/courses.Schema';
@@ -13,6 +13,20 @@ export class CourseService {
       const newCourse = new this.courseModel(createCourseDto); // Mongo will generate _id for courseId
       return newCourse.save();
     }
+
+    async getCourseById(id: string): Promise<Course> {
+      if (!Types.ObjectId.isValid(id)) {
+        throw new NotFoundException(`Invalid course ID: ${id}`);
+      }
+  
+      const course = await this.courseModel.findById(new Types.ObjectId(id)).exec();
+      if (!course) {
+        throw new NotFoundException(`Course not found with ID: ${id}`);
+      }
+  
+      return course;
+    }
+    
     
 
     async findAll(): Promise<Course[]> {
@@ -38,8 +52,8 @@ export class CourseService {
 
    // Method to search courses by title
    async searchByTitle(title: string): Promise<Course[]> {
-    const regex = new RegExp(title, 'i');  // Create a case-insensitive regex pattern
-    return this.courseModel.find({ title: { $regex: regex } }).exec();  // Search courses by title
+    const regex = new RegExp(title, 'i'); // Case-insensitive search
+    return this.courseModel.find({ title: { $regex: regex } }).exec();
   }
 
   // Method to get count of students who completed courses by instructorId

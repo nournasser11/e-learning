@@ -12,6 +12,10 @@ export class CourseController {
     async create(@Body() createCourseDto: CreateCourseDto): Promise<Course> {
       return this.courseService.create(createCourseDto);
     }
+    @Get('search') // Endpoint: GET /courses/search
+    async searchCourses(@Query('title') title: string) {
+      return this.courseService.searchByTitle(title);
+    }
 
 
     // get all courses(working)
@@ -20,10 +24,11 @@ export class CourseController {
         return this.courseService.findAll();
     }
 
+
     // get course by id(working)
-    @Get('/Cbyid/:id')
+    @Get('/:id')
     async findOne(@Param('id') id: string): Promise<Course> {
-        return this.courseService.findOne(id);
+      return this.courseService.getCourseById(id);
     }
 
 
@@ -34,10 +39,7 @@ export class CourseController {
     }
 
     // search that when a user enters a title, it returns all courses that contain that title(working)
-    @Get('search')
-    async search(@Query('title') title: string): Promise<Course[]> {
-    return this.courseService.searchByTitle(title);
-  }
+     
 
   // get count of students who completed courses by instructorId(working)
   @Get('completed/:instructorId')

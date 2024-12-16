@@ -27,6 +27,7 @@ import { AuthService } from './auth/auth.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SomeService } from './some/some.service';
 import { SomeModule } from './some/some.module';
+import{EnrollmentModule} from './EnrollmentService/enroll.module';
 
 import config from './config/keys';
 import { QuestionModule } from './questions/question.module';
@@ -57,7 +58,7 @@ import { NotesModule } from './notes/notes.module';
     }),
     UsersModule,QuizzesModule,CourseModule,
     ResponsesModule,ProgressModule,
-    QuestionModule,ModulesModule,ChatModule,NotesModule
+    QuestionModule,ModulesModule,ChatModule,NotesModule,EnrollmentModule
   ],
   controllers: [AppController],
   providers: [AppService],

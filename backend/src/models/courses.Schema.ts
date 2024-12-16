@@ -21,8 +21,8 @@ export class Course {
   @Prop({ required: true })
   description!: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: "User", required: true })
-  instructor!: MongooseSchema.Types.ObjectId; 
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: "User", required: false })
+  instructor?: MongooseSchema.Types.ObjectId; 
 
 
   @Prop({ default: 1 })
@@ -38,6 +38,8 @@ export class Course {
   completedStudents: Types.ObjectId[];
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Module' }], default: [] })
   modules: Types.ObjectId[]
+  @Prop({ type: [String], default: [] }) // Array of user IDs
+  enrolledUsers: string[];
 
 }
 

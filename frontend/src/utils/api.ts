@@ -4,23 +4,6 @@ const API_URL = 'http://localhost:3000'; // Replace with the actual API base URL
 
 // Interface for login credentials
 interface Credentials {
-<<<<<<< HEAD
-    email: string;
-    password: string;
-}
-
-// Login function
-export const login = async (data: Credentials): Promise<{ accessToken: string; role: string }> => {
-    try {
-        console.log("Data sent to API:", data); // Debug the request payload
-        const response = await axios.post(`${API_URL}/users/login`, data);
-        return response.data;
-    } catch (error) {
-        console.error("Login error:", error);
-        throw error;
-    }
-};
-=======
   email: string;
   password: string;
   role: string;
@@ -41,12 +24,11 @@ export const login = async (data: { email: string; password: string }): Promise<
     return response.json();
   };
   
->>>>>>> janaHagar
 
 // Get all courses
 export const getCourses = async (): Promise<any[]> => {
     try {
-        const response = await axios.get(`${API_URL}/courses`);
+        const response = await axios.get('${API_URL}/courses');
         console.log("Get courses response:", response.data); // Log the response
         return response.data; // Return the courses data
     } catch (error) {
@@ -62,7 +44,7 @@ export const getCourses = async (): Promise<any[]> => {
 // Get all students
 export const getStudents = async (): Promise<any[]> => {
     try {
-        const response = await axios.get(`${API_URL}/students`);
+        const response = await axios.get('${API_URL}/students');
         console.log("Get students response:", response.data); // Log the response
         return response.data; // Return the students data
     } catch (error) {
@@ -78,7 +60,7 @@ export const getStudents = async (): Promise<any[]> => {
 // Get all instructors
 export const getInstructors = async (): Promise<any[]> => {
     try {
-        const response = await axios.get(`${API_URL}/instructors`);
+        const response = await axios.get('${API_URL}/instructors');
         console.log("Get instructors response:", response.data); // Log the response
         return response.data; // Return the instructors data
     } catch (error) {
@@ -90,6 +72,17 @@ export const getInstructors = async (): Promise<any[]> => {
         throw error; // Propagate the error to the caller
     }
 };
+export const searchCoursesByTitle = async (title: string) => {
+    try {
+      const response = await axios.get(`${API_URL}/courses/search`, {
+        params: { title }, // Pass the title as a query parameter
+      });
+      return response.data; // Return the list of courses
+    } catch (error) {
+      console.error("Error searching for courses:", error);
+      throw error;
+    }
+  };
 
 // Interface for course
 interface Course {
@@ -102,21 +95,20 @@ interface Course {
 
 // Get courses for instructor
 export const getCoursesByInstructor = async (instructorId: string): Promise<Course[]> => {
-  try {
-    const response = await axios.get(`http://localhost:3000/courses/by-instructor/${instructorId}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching courses by instructor:', error);
-    throw error;
-  }
-};
-
+    try {
+      const response = await axios.get(`${API_URL}/courses/by-instructor/${instructorId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching courses by instructor:', error);
+      throw error; // Propagate the error to the caller
+    }
+  };
 // Axios interceptor to add JWT token to all requests
 axios.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('token'); // Retrieve token from localStorage
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`; // Add Authorization header
+            config.headers.Authorization = 'Bearer ${token}'; // Add Authorization header
         }
         return config;
     },
