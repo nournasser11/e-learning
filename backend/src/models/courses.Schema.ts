@@ -3,16 +3,16 @@ import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
 export type CourseDocument = Course & Document;
 
-enum CourseStatus {
+// Define CourseStatus enum
+export enum CourseStatus {
   VALID = 'valid',
   INVALID = 'invalid',
-  DELETED = 'deleted'
+  DELETED = 'deleted',
 }
 
 @Schema({ timestamps: true })
 export class Course {
-
-  @Prop({  unique: true })
+  @Prop({ unique: true })
   courseId!: string;
 
   @Prop({ required: true })
@@ -21,9 +21,8 @@ export class Course {
   @Prop({ required: true })
   description!: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: "User", required: true })
-  instructor!: MongooseSchema.Types.ObjectId; 
-
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
+  instructor!: MongooseSchema.Types.ObjectId;
 
   @Prop({ default: 1 })
   version!: number;
@@ -36,16 +35,15 @@ export class Course {
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
   completedStudents: Types.ObjectId[];
-  @Prop({ type: [{ type: Types.ObjectId, ref: 'Module' }], default: [] })
-  modules: Types.ObjectId[]
 
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Module' }], default: [] })
+  modules: Types.ObjectId[];
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
 
 // Pre-save hook to set `courseId` equal to `_id`
 CourseSchema.pre('save', function (next) {
-  this.courseId = this._id.toString();  // Assign `courseId` to `_id`
+  this.courseId = this._id.toString(); // Assign `courseId` to `_id`
   next();
 });
-
