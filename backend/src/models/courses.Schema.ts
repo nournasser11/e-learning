@@ -3,7 +3,7 @@ import { Document, Schema as MongooseSchema, Types } from 'mongoose';
 
 export type CourseDocument = Course & Document;
 
-enum CourseStatus {
+export enum CourseStatus {
   VALID = 'valid',
   INVALID = 'invalid',
   DELETED = 'deleted'
@@ -12,7 +12,7 @@ enum CourseStatus {
 @Schema({ timestamps: true })
 export class Course {
 
-  @Prop({  unique: true })
+  @Prop({ unique: true })
   courseId!: string;
 
   @Prop({ required: true })
@@ -22,7 +22,7 @@ export class Course {
   description!: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: "User", required: true })
-  instructor!: MongooseSchema.Types.ObjectId; 
+  instructor!: MongooseSchema.Types.ObjectId;
 
 
   @Prop({ default: 1 })

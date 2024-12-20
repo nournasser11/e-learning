@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, UseGuards, HttpException, HttpStatus, } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { RegisterUserDto } from '../dto/register-user.dto';
 import { LoginUserDto } from '../dto/login-user.dto';
@@ -6,10 +6,11 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import { User } from '../models/user.schema';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   // Register a new user
   @Post('register')
@@ -27,17 +28,44 @@ export class UserController {
 
   // Login user
   @Post('login')
-async login(@Body() loginUserDto: LoginUserDto) {
-  const { email, password } = loginUserDto;
-  const { accessToken, role } = await this.usersService.login(email, password);
-  
-  return {
-    message: 'Login successful',
-    accessToken,
-    role, // Include the role in the response
-  };
-}
+  async login(@Body() loginUserDto: LoginUserDto) {
+    const { email, password } = loginUserDto;
+    const { accessToken, role, _id, name } = await this.usersService.login(email, password);
 
+    return {
+      message: 'Login successful',
+      accessToken,
+      role,
+      _id,
+      name,
+    };
+  }
+
+  // Get all students NEW
+  @Get('students')
+  async getAllStudents(): Promise<User[]> {
+    try {
+      return await this.usersService.findStudents();
+    } catch (error) {
+      throw new HttpException(
+        `Failed to fetch students: ${(error as any).message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // Get all instructors NEW
+  @Get('instructors')
+  async getAllInstructors(): Promise<User[]> {
+    try {
+      return await this.usersService.findInstructors();
+    } catch (error) {
+      throw new HttpException(
+        `Failed to fetch instructors: ${(error as any).message}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 
   // Get user profile by ID
   @Get('profile/:id')

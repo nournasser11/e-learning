@@ -2,20 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
+/* Force black background globally */
+html, body {
+  background-color: #000000 !important; /* Ensure it overrides everything */
+  color: #ffffff; /* White text for readability */
+  margin: 0; /* Remove browser margins */
+  padding: 0;
+  height: 100%; /* Full height */
+  width: 100%; /* Full width */
   font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+#__next, main {
+  background-color: #000000 !important; /* Ensures Next.js app container is black */
+  min-height: 100vh;
 }

@@ -1,43 +1,63 @@
 "use client";
-import React from 'react';
-import Layout from '../../../components/Layout';
-import Button from '../../../components/Button';
-import { useRouter } from 'next/navigation';
 
-const AdminDashboard: React.FC = () => {
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+
+const Dashboard: React.FC = () => {
   const router = useRouter();
+  const [adminName, setAdminName] = useState<string>("");
 
-  const navigateTo = (path: string) => {
-    router.push(path);
-  };
+  useEffect(() => {
+    // Retrieve the admin's name from localStorage
+    const storedName = localStorage.getItem("name");
+    if (storedName) {
+      setAdminName(storedName);
+    } else {
+      setAdminName("Admin"); // Fallback if the name is not found
+    }
+  }, []);
 
   return (
-    <Layout>
-      <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold text-primary mb-4">Admin Dashboard</h1>
+    <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
+      <div className="w-full max-w-4xl p-8 bg-gray-900 rounded shadow-lg">
+        {/* Welcome Message */}
+        <h2 className="text-xl font-medium text-gray-300 mb-4 text-center">
+          Welcome, <span className="text-blue-400 font-bold">{adminName}</span>!
+        </h2>
+
+        {/* Dashboard Title */}
+        <h1 className="text-3xl font-bold text-blue-400 mb-6 text-center">
+          Admin Dashboard
+        </h1>
+
+        {/* Dashboard Buttons */}
         <div className="flex flex-col space-y-4">
-          <Button
-            onClick={() => navigateTo('/courses')}
-            className="bg-white text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white"
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            onClick={() => router.push("/admin/courses")}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           >
             Manage Courses
-          </Button>
-          <Button
-            onClick={() => navigateTo('/admin/manage-students')}
-            className="bg-white text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white"
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            onClick={() => router.push("/admin/students")}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           >
             Manage Students
-          </Button>
-          <Button
-            onClick={() => navigateTo('/admin/manage-instructors')}
-            className="bg-white text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white"
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            onClick={() => router.push("/admin/instructors")}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
           >
             Manage Instructors
-          </Button>
+          </motion.button>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 
-export default AdminDashboard;
+export default Dashboard;

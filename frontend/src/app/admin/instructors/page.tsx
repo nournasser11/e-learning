@@ -1,65 +1,65 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { getInstructors } from '../../../utils/api';
-import Layout from '../../../components/Layout';
-import Button from '../../../components/Button';
 
-interface Instructor {
-    id: string;
-    name: string;
-    courses: string[];
-}
+import React, { useState, useEffect } from "react";
+import { getInstructors, deleteUser, User } from "../../../utils/api";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 const ManageInstructors: React.FC = () => {
-    const [instructors, setInstructors] = useState<Instructor[]>([]);
-    const [error, setError] = useState<string | null>(null);
+    const [instructors, setInstructors] = useState<User[]>([]);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchInstructors = async () => {
             try {
-                const data = await getInstructors();
-                setInstructors(data);
+                const instructorsData = await getInstructors();
+                setInstructors(instructorsData);
             } catch (error) {
-                setError('An error occurred while fetching instructors.');
-                console.error('Error fetching instructors:', error);
+                console.error("Error fetching instructors:", error);
             }
         };
-
         fetchInstructors();
     }, []);
 
-    const addInstructor = async () => {
-        // Logic to add instructor
-    };
-
-    const deleteInstructor = async (id: string) => {
-        // Logic to delete instructor
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteUser(id);
+            setInstructors((prev) => prev.filter((instructor) => instructor.id !== id));
+        } catch (error) {
+            console.error("Error deleting instructor:", error);
+        }
     };
 
     return (
-        <Layout>
-            <div className="container mx-auto p-4">
-                <h1 className="text-3xl font-bold text-primary">Manage Instructors</h1>
-                <Button onClick={addInstructor} className="bg-white text-blue-500 border border-blue-500 hover:bg-blue-500 hover:text-white mb-4">
-                    Add Instructor
-                </Button>
-                {error ? (
-                    <p className="text-red-500">{error}</p>
-                ) : (
-                    <ul>
-                        {instructors.map(instructor => (
-                            <li key={instructor.id} className="border p-2 my-2">
-                                <h2 className="text-xl">{instructor.name}</h2>
-                                <p>Assigned Courses: {instructor.courses.join(', ')}</p>
-                                <Button onClick={() => deleteInstructor(instructor.id)} className="bg-danger text-white">
-                                    Delete Instructor
-                                </Button>
-                            </li>
-                        ))}
-                    </ul>
-                )}
+        <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
+            <div className="w-full max-w-4xl p-8 bg-gray-900 rounded shadow-lg">
+                <h1 className="text-3xl font-bold text-blue-400 mb-6 text-center">
+                    Manage Instructors
+                </h1>
+                <div className="grid gap-4">
+                    {instructors.map((instructor) => (
+                        <div key={instructor.id} className="bg-gray-800 p-4 rounded shadow-lg">
+                            <h3 className="text-lg font-bold text-blue-400">{instructor.name}</h3>
+                            <p>Email: {instructor.email}</p>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                onClick={() => handleDelete(instructor.id)}
+                                className="bg-red-500 text-white px-4 py-2 rounded"
+                            >
+                                Delete Instructor
+                            </motion.button>
+                        </div>
+                    ))}
+                </div>
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    onClick={() => router.push("/admin/dashboard")}
+                    className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded"
+                >
+                    Back to Dashboard
+                </motion.button>
             </div>
-        </Layout>
+        </div>
     );
 };
 
