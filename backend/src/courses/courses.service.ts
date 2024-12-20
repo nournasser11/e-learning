@@ -18,23 +18,27 @@ export class CourseService {
       if (!Types.ObjectId.isValid(id)) {
         throw new NotFoundException(`Invalid course ID: ${id}`);
       }
-  
-      const course = await this.courseModel.findById(new Types.ObjectId(id)).exec();
+    
+      const course = await this.courseModel.findById(new Types.ObjectId(id))
+        .populate('instructor', 'name email') // Populate instructor's name and email
+        .exec();
+        
       if (!course) {
         throw new NotFoundException(`Course not found with ID: ${id}`);
       }
-  
+    
       return course;
     }
     
     
-
+    
     async findAll(): Promise<Course[]> {
-        return this.courseModel.find().exec();
-    }
-
+      return this.courseModel.find().populate('instructor', 'name email').exec();
+  }
+  
     async findOne(id: string): Promise<Course> {
-        return this.courseModel.findById(id).exec();
+        return this.courseModel.findById(id).populate('instructor', 'name email') // Populate instructor's name and email
+        .exec();
     }
 
 
@@ -66,10 +70,10 @@ export class CourseService {
       { $project: { title: 1, completedCount: 1 } }  // Only return the title and completedCount fields
     ]);
   }
-
   async findAllByInstructor(instructorId: string): Promise<Course[]> {
-    const courses = await this.courseModel.find({ instructor: instructorId }).exec();
+    const courses = await this.courseModel.find({ instructor: new Types.ObjectId(instructorId) }).exec();
     console.log(`Courses found for instructor ${instructorId}:`, courses);
     return courses;
-  }
+}
+
 }  

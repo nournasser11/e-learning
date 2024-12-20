@@ -72,6 +72,18 @@ export const getInstructors = async (): Promise<any[]> => {
         throw error; // Propagate the error to the caller
     }
 };
+export const searchInstructorsByName = async (instructorName: string) => {
+    try {
+      // Calls GET /users/search-instructors?name=<instructorName>
+      const response = await axios.get(`${API_URL}/users/search-instructors`, {
+        params: { name: instructorName },
+      });
+      return response.data; // Returns an array of matching instructors
+    } catch (error) {
+      console.error("Error searching instructors by name:", error);
+      throw error;
+    }
+  };
 export const searchCoursesByTitle = async (title: string) => {
     try {
       const response = await axios.get(`${API_URL}/courses/search`, {
@@ -89,20 +101,28 @@ interface Course {
   id: string;
   title: string;
   description: string;
-  instructorId: string;
+  instructor: string;
+
   // Add other course properties as needed
 }
 
-// Get courses for instructor
-export const getCoursesByInstructor = async (instructorId: string): Promise<Course[]> => {
-    try {
-      const response = await axios.get(`${API_URL}/courses/by-instructor/${instructorId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching courses by instructor:', error);
-      throw error; // Propagate the error to the caller
-    }
-  };
+export const getCoursesByInstructor = async (instructorId: string): Promise<
+  {
+    _id: string;
+    title: string;
+    description: string;
+    instructorId: string;
+  }[]
+> => {
+  try {
+    const response = await axios.get(`${API_URL}/courses/by-instructor/${instructorId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching courses by instructor:", error);
+    throw error;
+  }
+};
+
 // Axios interceptor to add JWT token to all requests
 axios.interceptors.request.use(
     (config) => {
@@ -115,4 +135,6 @@ axios.interceptors.request.use(
     (error) => {
         return Promise.reject(error); // Handle request errors
     }
+
+
 );

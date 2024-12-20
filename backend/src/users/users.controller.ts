@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param,Query, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { RegisterUserDto } from '../dto/register-user.dto';
 import { LoginUserDto } from '../dto/login-user.dto';
@@ -73,5 +73,13 @@ export class UserController {
         HttpStatus.BAD_REQUEST,
       );
     }
+  }
+
+
+
+  @Get('search-instructors')
+  async searchInstructors(@Query('name') name: string) {
+    // 'name' is the query param, e.g. /users/search-instructors?name=John
+    return this.usersService.searchInstructorsByName(name);
   }
 }

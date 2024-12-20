@@ -122,7 +122,18 @@ export default function CourseDetails() {
           <p className="text-sm text-gray-400 text-center mb-6">
             Course ID: <strong>{course._id}</strong>
           </p>
+          {/* Display Instructor's Name */}
+            {course.instructor ? (
+             <p className="text-sm text-gray-400 text-center mb-6">
+              Instructor: <strong>{course.instructor.name}</strong>
+               </p>
+                ) : (
+              <p className="text-sm text-gray-400 text-center mb-6">
+              Instructor: <strong>Not Assigned</strong>
+               </p>
+              )}
 
+          
           {/* Enroll Button */}
           <div className="flex justify-center">
             <Button
