@@ -89,13 +89,16 @@ export class UsersService {
   // Update user profile picture
   async updateProfilePicture(userId: string, profilePictureUrl: string): Promise<User> {
     const user = await this.userModel.findById(userId);
-    if (!user) throw new NotFoundException('User not found');
-
-    user.profilePicture = profilePictureUrl;
-    await user.save();
-
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+  
+    user.profilePicture = profilePictureUrl; // Update profile picture field
+    await user.save(); // Ensure it is saved in the database
+  
     return user;
   }
+  
 
   // Delete a user
   async deleteUser(id: string): Promise<boolean> {
