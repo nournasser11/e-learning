@@ -1,13 +1,11 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../models/user.schema';
 import { RegisterUserDto } from '../dto/register-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { LoginUserDto } from '../dto/login-user.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from '../auth/jwt-payload.interface';
 
 @Injectable()
 export class UsersService {
@@ -39,13 +37,50 @@ export class UsersService {
     return savedUser;
   }
 
-  // Get all users (Admin role only)
+  async removeInstructorByUserId(userId: string): Promise<boolean> {
+    const user = await this.userModel.findOne({ userId }).exec();
+  
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+  
+    if (user.role !== 'instructor') {
+      throw new HttpException('User is not an instructor', HttpStatus.BAD_REQUEST);
+    }
+  
+    await this.userModel.deleteOne({ userId }).exec();
+    return true;
+  }
+  
+  
+
+   // AdminRegister a new Instructor NEW 
+   async registerInstructor(registerUserDto: RegisterUserDto): Promise<User> {
+    // Explicitly set the role to 'instructor'
+    registerUserDto.role = 'instructor';
+
+    return this.create(registerUserDto);
+  }
+
+  // Fetch all users
   async findAll(): Promise<User[]> {
     this.logger.log('Retrieving all users...');
     return this.userModel.find().exec();
   }
 
-  // Get user by ID (for profile access)
+  // Fetch users with role "student" NEW
+  async findStudents(): Promise<User[]> {
+    this.logger.log('Fetching all students...');
+    return this.userModel.find({ role: 'student' }).exec();
+  }
+
+  // Fetch users with role "instructor" NEW
+  async findInstructors(): Promise<User[]> {
+    this.logger.log('Fetching all instructors...');
+    return this.userModel.find({ role: 'instructor' }).exec();
+  }
+
+  // Get user by ID
   async findOne(id: string): Promise<User> {
     const user = await this.userModel.findById(id).exec();
     if (!user) {
@@ -54,7 +89,7 @@ export class UsersService {
     return user;
   }
 
-  // Update user info (supports password updates and other fields)
+  // Update user info
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.userModel.findById(id).exec();
     if (!user) {
@@ -82,7 +117,7 @@ export class UsersService {
     return updatedUser;
   }
 
-  // Delete a user (Admin role only)
+  // Delete a user
   async remove(id: string): Promise<User> {
     const user = await this.userModel.findByIdAndDelete(id).exec();
     if (!user) {
@@ -92,20 +127,20 @@ export class UsersService {
     return user;
   }
 
-  // Login (Generate JWT token)
+  // Login
   async login(email: string, password: string) {
     const user = await this.userModel.findOne({ email });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
-  
+
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
-  
+
     const accessToken = this.jwtService.sign({ email, sub: user._id });
-  
+
     return {
       accessToken,
       role: user.role,
@@ -113,18 +148,4 @@ export class UsersService {
       name: user.name,
     };
   }
-
-  // Validate user credentials (for guards or strategies)
-  async validateUser(email: string, password: string, role?: string): Promise<User | null> {
-    const user = await this.userModel.findOne({ email }).exec();
-    if (user && (await bcrypt.compare(password, user.passwordHash))) {
-      // Optional: Validate role if provided
-      if (role && user.role !== role) {
-        return null; // Role doesn't match
-      }
-      return user; // Return user if email, password, and role are valid
-    }
-    return null; // Return null if validation fails
-  }
 }
-  
