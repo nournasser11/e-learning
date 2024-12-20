@@ -18,6 +18,7 @@ export interface Course {
 }
 
 export interface User {
+    profilePicture: string;
     id: string;
     name: string;
     email: string;
@@ -126,12 +127,21 @@ export const getCourses = async (): Promise<Course[]> =>
 
 
 // Get all students
-export const getStudents = async (): Promise<User[]> =>
-    withErrorHandling(async () => {
+// Fetch all students
+export const getStudents = async (): Promise<any[]> => {
+    try {
         const response = await axios.get(`${API_URL}/users/students`);
         return response.data;
-    }, "Get students error");
-
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error("Error fetching students:", error.response?.data || error.message);
+            throw new Error(error.response?.data?.message || "Error fetching students.");
+        } else {
+            console.error("Unknown error fetching students:", error);
+            throw new Error("Unknown error fetching students.");
+        }
+    }
+};
 // Get all instructors
 export const getInstructors = async (): Promise<User[]> =>
     withErrorHandling(async () => {
@@ -176,7 +186,25 @@ export const getCoursesByInstructor = async (instructorId: string): Promise<Cour
     }, "Get courses by instructor error");
 
 
-
+// Delete a student by ID
+export const deleteStudent = async (id: string): Promise<{ message: string }> => {
+    try {
+        const response = await axios.delete(`${API_URL}/students/${id}`);
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            throw new Error(`Unexpected response status: ${response.status}`);
+        }
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error("Error deleting student:", error.response?.data || error.message);
+            throw new Error(error.response?.data?.message || "Error deleting student.");
+        } else {
+            console.error("Unknown error deleting student:", error);
+            throw new Error("Unknown error deleting student.");
+        }
+    }
+};
 // Axios request interceptor for JWT token
 axios.interceptors.request.use(
     (config) => {

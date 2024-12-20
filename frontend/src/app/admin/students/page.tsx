@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 const ManageStudents: React.FC = () => {
     const [students, setStudents] = useState<User[]>([]);
+    const [searchQuery, setSearchQuery] = useState<string>("");
     const router = useRouter();
 
     useEffect(() => {
@@ -30,17 +31,47 @@ const ManageStudents: React.FC = () => {
         }
     };
 
+    // Filter students based on search query
+    const filteredStudents = students.filter((student) =>
+        student.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
             <div className="w-full max-w-4xl p-8 bg-gray-900 rounded shadow-lg">
                 <h1 className="text-3xl font-bold text-blue-400 mb-6 text-center">
                     Manage Students
                 </h1>
+
+                {/* Search Bar */}
+                <div className="mb-6">
+                    <input
+                        type="text"
+                        placeholder="Search by name"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full p-3 bg-gray-800 text-white rounded border border-gray-700 focus:outline-none focus:border-blue-400"
+                    />
+                </div>
+
                 <div className="grid gap-4">
-                    {students.map((student) => (
-                        <div key={student.id} className="bg-gray-800 p-4 rounded shadow-lg">
-                            <h3 className="text-lg font-bold text-blue-400">{student.name}</h3>
-                            <p>Email: {student.email}</p>
+                    {filteredStudents.map((student) => (
+                        <div
+                            key={student.id || student.email} // Use a unique identifier
+                            className="bg-gray-800 p-4 rounded shadow-lg flex items-center gap-4"
+                        >
+                            {/* Student Profile Picture */}
+                            <img
+                                src={student.profilePicture || "/images/default-profile.png"} // Use default if no profile picture
+                                alt={student.name}
+                                className="w-16 h-16 rounded-full object-cover border border-gray-600"
+                            />
+                            {/* Student Information */}
+                            <div className="flex-1">
+                                <h3 className="text-lg font-bold text-blue-400">{student.name}</h3>
+                                <p className="text-gray-400">Email: {student.email}</p>
+                            </div>
+                            {/* Delete Button */}
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 onClick={() => handleDelete(student.id)}
@@ -51,6 +82,8 @@ const ManageStudents: React.FC = () => {
                         </div>
                     ))}
                 </div>
+
+                {/* Back to Dashboard Button */}
                 <motion.button
                     whileHover={{ scale: 1.05 }}
                     onClick={() => router.push("/admin/dashboard")}
