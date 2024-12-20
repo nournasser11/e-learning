@@ -41,12 +41,13 @@ export class EnrollmentService {
   
     return { message: 'Enrolled successfully!' };
   }
-  async getEnrolledCourses(userId: string): Promise<any> {
-    const user = await this.userModel.findById(userId).populate('enrolledCourses'); // Populate enrolledCourses references
+  async getEnrolledCourses(userId: string): Promise<Course[]> {
+    const user = await this.userModel.findById(userId).populate('enrolledCourses');
     if (!user) {
       throw new NotFoundException('User not found');
     }
-
-    return { enrolledCourses: user.enrolledCourses }; // Return the populated enrolled courses
+    const courses = await this.courseModel.find({ _id: { $in: user.enrolledCourses } });
+    return courses; // Return the courses
   }
 }
+

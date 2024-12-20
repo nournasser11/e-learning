@@ -21,8 +21,8 @@ export class User extends Document {
   @Prop({ required: true, enum: ['student', 'instructor', 'admin'] })
   role: string;
 
-  @Prop()
-  profilePictureUrl?: string;
+  @Prop({ default: '' }) // Default to an empty string for profile pictures
+  profilePicture: string;
 
   @Prop({ default: () => new Date() })
   createdAt: Date;

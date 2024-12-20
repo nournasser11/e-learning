@@ -1,5 +1,11 @@
 import axios from 'axios';
 
+// Define the APIResponse interface
+interface APIResponse<T> {
+  data: T;
+  message: string;
+}
+
 const API_URL = 'http://localhost:3000'; // Replace with the actual API base URL
 
 // Interface for login credentials
@@ -13,16 +19,62 @@ interface Credentials {
   
 }
 
+
+// Function to log errors
+const logError = (error: any, context: string): string => {
+  if (axios.isAxiosError(error)) {
+    console.error(`${context} error:`, error.response?.data || error.message);
+    return error.response?.data?.message || error.message;
+  } else {
+    console.error(`${context} error:`, (error as Error).message);
+    return (error as Error).message;
+  }
+};
+
+// Interface for registration data
+interface RegistrationData {
+  email: string;
+  password: string;
+  role: string;
+  name: string;
+  profilePictureUrl: string;
+}
 // Login function
-export const login = async (data: { email: string; password: string }): Promise<{ accessToken: string; role: string; _id: string; name: string; }> => {
-    console.log("Data sent to API:", data); // Debug the request payload
-    const response = await fetch("http://localhost:3000/users/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data), // No role here
+// Register function
+export const register = async (data: FormData): Promise<void> => {
+  try {
+    const response = await axios.post("http://localhost:3000/users/register", data, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
-    return response.json();
-  };
+    console.log("Registration successful:", response.data);
+  } catch (err) {
+    const error = err as any;
+    console.error("Registration error:", error.response?.data || error.message);
+      throw err;
+  }
+};
+export const login = async (data: { email: string; password: string }) => {
+  try {
+    const response = await fetch(`${API_URL}/users/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      // Log the exact response status and message
+      const errorResponse = await response.json();
+      console.error("Login error response:", errorResponse);
+      throw new Error(errorResponse.message || "Login failed");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error during login:", error);
+    throw error;
+  }
+};
+  
   
 
 // Get all courses
@@ -95,6 +147,15 @@ export const searchCoursesByTitle = async (title: string) => {
       throw error;
     }
   };
+  export const getEnrolledCourses = async (userId: string): Promise<any[]> => {
+    try {
+      const response = await axios.get(`http://localhost:3000/enrollment/${userId}/courses`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching enrolled courses:', error);
+      throw error;
+    }
+  };
 
 // Interface for course
 interface Course {
@@ -106,23 +167,106 @@ interface Course {
   // Add other course properties as needed
 }
 
-export const getCoursesByInstructor = async (instructorId: string): Promise<
-  {
-    _id: string;
-    title: string;
-    description: string;
-    instructorId: string;
-  }[]
-> => {
-  try {
-    const response = await axios.get(`${API_URL}/courses/by-instructor/${instructorId}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching courses by instructor:", error);
-    throw error;
-  }
-};
 
+// Get courses for instructor
+export const getCoursesByInstructor = async (instructorId: string): Promise<Course[]> => {
+    try {
+      const response = await axios.get(`${API_URL}/courses/by-instructor/${instructorId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching courses by instructor:', error);
+      throw error; // Propagate the error to the caller
+    }
+   
+  };
+  // Fetch user profile
+  export const fetchUserProfile = async (userId: string) => {
+    try {
+      const response = await axios.get(`http://localhost:3000/users/${userId}`);
+      console.log("Fetched profile:", response.data); // Debug log
+      return response.data; // Ensure profilePicture is part of the response
+    } catch (err) {
+      console.error("Error fetching user profile:", err);
+      throw new Error("Failed to fetch user profile");
+    }
+    
+  };
+  
+  
+  
+  // Update user name
+  export const updateName = async (userId: string, newName: string) => {
+    try {
+      const response = await axios.put(`${API_URL}/users/${userId}`, { name: newName });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('Error updating name:', error.response?.data || error.message);
+        throw new Error(error.response?.data?.message || 'Failed to update name');
+      } else {
+        console.error('Unexpected error:', error);
+        throw new Error('An unexpected error occurred');
+      }
+    }
+  };
+  
+  // Update profile picture
+  export const updateProfilePicture = async (userId: string, file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+  
+      const response = await axios.post(`${API_URL}/users/${userId}/upload-profile-picture`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('Error updating profile picture:', error.response?.data || error.message);
+        throw new Error(error.response?.data?.message || 'Failed to update profile picture');
+      } else {
+        console.error('Unexpected error:', error);
+        throw new Error('An unexpected error occurred');
+      }
+    }
+  };
+  
+  // Update password
+  export const updatePassword = async (userId: string, currentPassword: string, newPassword: string) => {
+    try {
+      const response = await axios.put(`${API_URL}/users/${userId}/update-password`, {
+        currentPassword,
+        newPassword,
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('Error updating password:', error.response?.data || error.message);
+        throw new Error(error.response?.data?.message || 'Failed to update password');
+      } else {
+        console.error('Unexpected error:', error);
+        throw new Error('An unexpected error occurred');
+      }
+    }
+  };
+  
+  // Delete user
+  export const deleteUser = async (userId: string) => {
+    try {
+      const response = await axios.delete(`${API_URL}/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('Error deleting user:', error.response?.data || error.message);
+        throw new Error(error.response?.data?.message || 'Failed to delete user');
+      } else {
+        console.error('Unexpected error:', error);
+        throw new Error('An unexpected error occurred');
+      }
+    }
+  };
+  
+  
 // Axios interceptor to add JWT token to all requests
 axios.interceptors.request.use(
     (config) => {
@@ -134,7 +278,5 @@ axios.interceptors.request.use(
     },
     (error) => {
         return Promise.reject(error); // Handle request errors
-    }
-
-
-);
+    })
+  

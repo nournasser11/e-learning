@@ -5,16 +5,34 @@ import Layout from "../../../components/Layout";
 import DashboardCard from "../../../components/DashboardCard";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { fetchUserProfile } from "../../../utils/api"; // Fetch user profile from API
 
 const StudentDashboard: React.FC = () => {
   const router = useRouter();
   const [userName, setUserName] = useState<string>("");
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
   useEffect(() => {
-    // Retrieve student name from localStorage
-    const retrievedName = localStorage.getItem("name");
-    if (retrievedName) {
-      setUserName(retrievedName);
+    const userId = localStorage.getItem("userId");
+
+    if (userId) {
+      const loadUserProfile = async () => {
+        try {
+          const profile = await fetchUserProfile(userId);
+          if (profile.name) setUserName(profile.name);
+
+          // Update profile picture URL or set null if unavailable
+          if (profile.profilePicture) {
+            setProfilePicture(`http://localhost:3000${profile.profilePicture}`);
+          } else {
+            setProfilePicture(null);
+          }
+        } catch (err) {
+          console.error("Failed to load user profile:", err);
+        }
+      };
+
+      loadUserProfile();
     }
   }, []);
 
@@ -31,9 +49,34 @@ const StudentDashboard: React.FC = () => {
     router.push("/student/search-instructors");
   };
 
+  const handleNavigateToProfile = () => {
+    router.push("/student/profile");
+  };
+
   return (
     <Layout>
       <div className="container mx-auto p-6 flex flex-col items-center justify-center min-h-screen text-white">
+        {/* Profile Icon */}
+        <div className="absolute top-4 right-4">
+          {profilePicture ? (
+            <img
+              src={profilePicture}
+              alt="User Profile"
+              className="w-10 h-10 rounded-full object-cover cursor-pointer"
+              onClick={handleNavigateToProfile}
+              title="See My Profile"
+            />
+          ) : (
+            <div
+              className="w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center cursor-pointer"
+              onClick={handleNavigateToProfile}
+              title="See My Profile"
+            >
+              <span className="text-white text-sm">No Pic</span>
+            </div>
+          )}
+        </div>
+
         {/* Animated Heading */}
         <motion.h1
           className="text-5xl font-extrabold text-blue-400 mb-10 text-center"
