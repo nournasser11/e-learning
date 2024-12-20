@@ -1,13 +1,17 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  UnauthorizedException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../models/user.schema';
 import { RegisterUserDto } from '../dto/register-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { LoginUserDto } from '../dto/login-user.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { JwtPayload } from '../auth/jwt-payload.interface';
 
 @Injectable()
 export class UsersService {
@@ -19,112 +23,111 @@ export class UsersService {
   ) {}
 
   // Create a new user
-  async create(createUserDto: RegisterUserDto): Promise<User> {
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+  async create(registerUserDto: RegisterUserDto): Promise<User> {
+    const { email, password, profilePictureUrl } = registerUserDto;
 
-    // Ensure unique email (validation before creating the user)
-    const existingUser = await this.userModel.findOne({ email: createUserDto.email });
+    const existingUser = await this.userModel.findOne({ email });
     if (existingUser) {
-      throw new UnauthorizedException('Email is already registered');
+      throw new BadRequestException('Email is already registered');
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser = new this.userModel({
-      ...createUserDto,
+      ...registerUserDto,
       passwordHash: hashedPassword,
-      role: createUserDto.role || 'student', // Default to 'student'
+      profilePicture: profilePictureUrl || '',
+      role: registerUserDto.role || 'student',
     });
 
-    const savedUser = await newUser.save();
-    this.logger.log(`User created with ID: ${savedUser._id}`);
-    return savedUser;
+    return await newUser.save();
   }
 
-  // Get all users (Admin role only)
+  // Find all users
   async findAll(): Promise<User[]> {
-    this.logger.log('Retrieving all users...');
     return this.userModel.find().exec();
   }
 
-  // Get user by ID (for profile access)
+  // Find a user by ID
   async findOne(id: string): Promise<User> {
     const user = await this.userModel.findById(id).exec();
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    if (!user) throw new NotFoundException('User not found');
     return user;
   }
 
-  // Update user info (supports password updates and other fields)
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+  // Update user name or other fields
+  async updateUser(id: string, updateData: { name?: string }): Promise<User> {
     const user = await this.userModel.findById(id).exec();
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
+    if (!user) throw new NotFoundException('User not found');
 
-    // Update password if provided
-    if (updateUserDto.newPassword && updateUserDto.currentPassword) {
-      const isPasswordValid = await bcrypt.compare(updateUserDto.currentPassword, user.passwordHash);
-      if (!isPasswordValid) {
-        throw new UnauthorizedException('Current password is incorrect');
-      }
+    if (updateData.name) user.name = updateData.name;
 
-      const hashedNewPassword = await bcrypt.hash(updateUserDto.newPassword, 10);
-      user.passwordHash = hashedNewPassword;
-    }
-
-    // Update other fields if provided
-    if (updateUserDto.name) user.name = updateUserDto.name;
-    if (updateUserDto.email) user.email = updateUserDto.email;
-
-    // Save and return updated user
-    const updatedUser = await user.save();
-    this.logger.log(`User updated with ID: ${id}`);
-    return updatedUser;
-  }
-
-  // Delete a user (Admin role only)
-  async remove(id: string): Promise<User> {
-    const user = await this.userModel.findByIdAndDelete(id).exec();
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-    this.logger.log(`User deleted with ID: ${id}`);
+    await user.save();
     return user;
   }
 
-  // Login (Generate JWT token)
+  // Update user password
+  async updatePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<boolean> {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    user.passwordHash = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    return true;
+  }
+
+  // Update user profile picture
+  async updateProfilePicture(userId: string, profilePictureUrl: string): Promise<User> {
+    const user = await this.userModel.findById(userId);
+    if (!user) throw new NotFoundException('User not found');
+
+    user.profilePicture = profilePictureUrl;
+    await user.save();
+
+    return user;
+  }
+
+  // Delete a user
+  async deleteUser(id: string): Promise<boolean> {
+    const result = await this.userModel.deleteOne({ _id: id }).exec();
+    return result.deletedCount > 0;
+  }
+
+  // Login (JWT Generation)
   async login(email: string, password: string) {
     const user = await this.userModel.findOne({ email });
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-  
+    if (!user) throw new UnauthorizedException('Invalid credentials');
+
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-  
+    if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
+
     const accessToken = this.jwtService.sign({ email, sub: user._id });
-  
+
     return {
       accessToken,
       role: user.role,
       _id: user._id,
       name: user.name,
+      profilePicture: user.profilePicture,
     };
   }
 
-  // Validate user credentials (for guards or strategies)
-  async validateUser(email: string, password: string, role?: string): Promise<User | null> {
+  // Validate user for JWT Guards
+  async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.userModel.findOne({ email }).exec();
     if (user && (await bcrypt.compare(password, user.passwordHash))) {
-      // Optional: Validate role if provided
-      if (role && user.role !== role) {
-        return null; // Role doesn't match
-      }
-      return user; // Return user if email, password, and role are valid
+      return user;
     }
-    return null; // Return null if validation fails
+    return null;
   }
 }
-  

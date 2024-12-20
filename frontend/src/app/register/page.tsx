@@ -1,119 +1,128 @@
 "use client";
 
 import React, { useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
+import { register } from "../../utils/api";
 import Layout from "../../components/Layout";
-import FormInput from "../../components/FormInput";
 import Button from "../../components/Button";
-import { motion } from "framer-motion";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-const RegisterPage: React.FC = () => {
+const RegisterPage = () => {
   const router = useRouter();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "student", // Default role
+  });
 
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setProfilePicture(e.target.files[0]);
+    }
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
-    setLoading(true);
+    setErrorMessage("");
 
     try {
-      const response = await axios.post("http://localhost:3000/api/register", { email, password });
-      setSuccess("Registration successful! Redirecting to login...");
-      setTimeout(() => router.push("/login"), 1500); // Redirect to login page after success
-    } catch (err) {
-      console.error("Registration failed:", err);
-      setError("Registration failed. Please try again.");
-    } finally {
-      setLoading(false);
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("password", formData.password);
+      formDataToSend.append("role", formData.role);
+      if (profilePicture) {
+        formDataToSend.append("profilePicture", profilePicture);
+      }
+
+      await register(formDataToSend);
+      router.push("/login");
+    } catch (error) {
+      setErrorMessage("Registration failed. Please try again.");
+      console.error("Registration error:", error);
     }
   };
 
   return (
     <Layout>
-      <div className="relative min-h-screen flex items-center justify-center px-4">
-        {/* Floating Particles */}
-        <motion.div
-          className="absolute w-24 h-24 bg-blue-500 rounded-full opacity-20 blur-3xl"
-          initial={{ x: -200, y: -200 }}
-          animate={{ x: [0, 200, -100, 0], y: [0, 200, -100, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-        />
-        <motion.div
-          className="absolute w-16 h-16 bg-gray-600 rounded-full opacity-10 blur-2xl"
-          initial={{ x: 200, y: 200 }}
-          animate={{ x: [-100, 100, 0, -200], y: [100, -100, 200, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-        />
-
-        {/* Registration Card */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="bg-gray-800 text-white p-8 rounded-lg shadow-lg max-w-md w-full"
-        >
-          <h1 className="text-3xl font-bold text-center mb-6 text-blue-400">
+      <div className="min-h-screen flex items-center justify-center bg-black text-white px-4">
+        <div className="w-full max-w-md bg-gray-900 p-6 rounded-lg shadow-md">
+          <h1 className="text-3xl font-bold text-blue-400 text-center mb-6">
             Create an Account
           </h1>
 
-          {/* Success Message */}
-          {success && <p className="text-green-500 text-center mb-4">{success}</p>}
+          <form onSubmit={handleRegister} className="space-y-4">
+            <input
+              type="text"
+              name="name"
+              placeholder="Full name"
+              value={formData.name}
+              onChange={handleChange}
+              className="w-full p-3 rounded bg-gray-800 border border-gray-600 text-white"
+              required
+            />
 
-          {/* Error Message */}
-          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-
-          {/* Registration Form */}
-          <form onSubmit={handleRegister} className="space-y-5">
-            <FormInput
+            <input
               type="email"
               name="email"
               placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full p-3 rounded bg-gray-800 border border-gray-600 text-white"
               required
             />
 
-            <FormInput
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-
-            <div className="flex justify-center">
-              <Button
-                type="submit"
-                disabled={loading}
-                className={`w-full py-2 font-bold rounded-md ${
-                  loading
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700 transition duration-300"
-                }`}
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full p-3 rounded bg-gray-800 border border-gray-600 text-white"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-3 flex items-center text-gray-400"
               >
-                {loading ? "Registering..." : "Register"}
-              </Button>
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
-          </form>
 
-          <p className="text-center text-gray-400 mt-4">
-            Already have an account?{" "}
-            <span
-              className="text-blue-400 cursor-pointer hover:underline"
-              onClick={() => router.push("/login")}
+            <div>
+              <label className="block text-sm mb-1 text-gray-400">Upload Profile Picture</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="w-full p-2 rounded bg-gray-800 border border-gray-600 text-white"
+              />
+            </div>
+
+            {errorMessage && (
+              <p className="text-red-500 text-center text-sm">{errorMessage}</p>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded"
             >
-              Log in
-            </span>
-          </p>
-        </motion.div>
+              Create Account
+            </Button>
+          </form>
+        </div>
       </div>
     </Layout>
   );

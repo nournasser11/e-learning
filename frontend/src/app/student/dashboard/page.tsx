@@ -5,6 +5,7 @@ import Layout from "../../../components/Layout";
 import DashboardCard from "../../../components/DashboardCard";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { FaUserCircle } from "react-icons/fa"; // Import the person icon
 
 const StudentDashboard: React.FC = () => {
   const router = useRouter();
@@ -31,9 +32,22 @@ const StudentDashboard: React.FC = () => {
     router.push("/student/search-instructors");
   };
 
+  const handleNavigateToProfile = () => {
+    router.push("/student/profile");
+  };
+
   return (
     <Layout>
       <div className="container mx-auto p-6 flex flex-col items-center justify-center min-h-screen text-white">
+        {/* Profile Icon */}
+        <div className="absolute top-4 right-4">
+          <FaUserCircle
+            className="text-4xl text-blue-500 cursor-pointer hover:text-blue-600 transition duration-300"
+            onClick={handleNavigateToProfile}
+            title="See My Profile" // Tooltip on hover
+          />
+        </div>
+
         {/* Animated Heading */}
         <motion.h1
           className="text-5xl font-extrabold text-blue-400 mb-10 text-center"
