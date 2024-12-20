@@ -12,11 +12,11 @@ export interface Course {
 }
 
 export interface User {
-  id: string;
+  id: string; // Mapped from userId
   name: string;
   email: string;
   role: "student" | "instructor" | "admin";
-  courses?: string[];
+  courses?: string[]; // Array of enrolled course IDs
   profilePictureUrl?: string; // Optional profile picture
 }
 
@@ -81,26 +81,27 @@ export const login = async (data: { email: string; password: string }): Promise<
 export const getStudents = async (): Promise<User[]> =>
   withErrorHandling(async () => {
     const response = await axios.get(`${API_URL}/users/students`);
-    return response.data;
+    return response.data.map((student: any) => ({
+      ...student,
+      id: student.userId, // Map userId to id for frontend usage
+    }));
   }, "Get students error");
 
 // Get all instructors
 export const getInstructors = async (): Promise<User[]> =>
-    withErrorHandling(async () => {
-      const response = await axios.get(`${API_URL}/users/instructors`);
-      return response.data.map((instructor: any) => ({
-        ...instructor,
-        id: instructor.userId, // Map userId to id for consistency in frontend
-      }));
-    }, "Get instructors error");
-  
-
+  withErrorHandling(async () => {
+    const response = await axios.get(`${API_URL}/users/instructors`);
+    return response.data.map((instructor: any) => ({
+      ...instructor,
+      id: instructor.userId, // Map userId to id for frontend usage
+    }));
+  }, "Get instructors error");
 
 // Delete an instructor by userId
 export const deleteInstructorByUserId = async (userId: string): Promise<void> =>
-    withErrorHandling(async () => {
-      await axios.delete(`${API_URL}/users/instructors/${userId}`);
-    }, "Delete instructor error");
+  withErrorHandling(async () => {
+    await axios.delete(`${API_URL}/users/instructors/${userId}`);
+  }, "Delete instructor error");
 
 // Delete a user
 export const deleteUser = async (userId: string): Promise<void> =>
@@ -117,6 +118,14 @@ export const getCourses = async (): Promise<Course[]> =>
       id: course._id, // Map backend `_id` to `id`
     }));
   }, "Get courses error");
+
+// Get courses by course ID
+export const getCoursesByIds = async (courseIds: string[]): Promise<Course[]> =>
+  withErrorHandling(async () => {
+    const requests = courseIds.map((id) => axios.get(`${API_URL}/courses/Cbyid/${id}`));
+    const responses = await Promise.all(requests);
+    return responses.map((response) => response.data);
+  }, "Get courses by IDs error");
 
 // Update course status (valid, invalid, deleted)
 export const updateCourseStatus = async (
