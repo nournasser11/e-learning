@@ -41,18 +41,32 @@ interface RegistrationData {
 }
 // Login function
 // Register function
-export const register = async (data: FormData): Promise<void> => {
+
+export const register = async (data: {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+  profilePictureUrl: string;
+}): Promise<void> => {
   try {
-    const response = await axios.post("http://localhost:3000/users/register", data, {
-      headers: { "Content-Type": "multipart/form-data" },
+    const response = await axios.post(`${API_URL}/users/register`, data, {
+      headers: { "Content-Type": "application/json" },
     });
+
     console.log("Registration successful:", response.data);
   } catch (err) {
-    const error = err as any;
-    console.error("Registration error:", error.response?.data || error.message);
-      throw err;
+    if (axios.isAxiosError(err)) {
+      const errorMessage = err.response?.data?.message || "Unknown error occurred";
+      console.error("Registration error:", errorMessage);
+      throw new Error(errorMessage);
+    } else {
+      console.error("Unexpected error:", err);
+      throw new Error("An unexpected error occurred");
+    }
   }
 };
+
 export const login = async (data: { email: string; password: string }) => {
   try {
     const response = await fetch(`${API_URL}/users/login`, {
@@ -159,6 +173,7 @@ export const searchCoursesByTitle = async (title: string) => {
 
 // Interface for course
 interface Course {
+  _id: string;
   id: string;
   title: string;
   description: string;

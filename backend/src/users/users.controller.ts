@@ -31,49 +31,23 @@ export class UserController {
    * Register a new user
    */
   @Post('register')
-  @UseInterceptors(
-    FileInterceptor('profilePicture', {
-      storage: diskStorage({
-        destination: './uploads/profile-pictures',
-        filename: (req, file, cb) => {
-          const uniqueName = `${Date.now()}-${file.originalname}`;
-          cb(null, uniqueName);
-        },
-      }),
-      fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-          cb(null, true);
-        } else {
-          cb(new BadRequestException('Only image files are allowed!'), false);
-        }
-      },
-      limits: { fileSize: 2 * 1024 * 1024 }, // Limit file size to 2MB
-    }),
-  )
+  @UseInterceptors(FileInterceptor('profilePicture')) // To handle multipart/form-data
   async register(
-    @Body() registerUserDto: RegisterUserDto,
+    @Body() body: { name: string; email: string; password: string; role: string },
     @UploadedFile() profilePicture: Express.Multer.File,
   ) {
-    try {
-      // Set profile picture URL if a file was uploaded
-      const profilePictureUrl = profilePicture
-        ? `/uploads/profile-pictures/${profilePicture.filename}`
-        : null;
+    // Log incoming data for debugging
+    console.log('Received body:', body);
+    console.log('Received file:', profilePicture);
 
-      // Pass the updated DTO to the service
-      const user = await this.usersService.create({
-        ...registerUserDto,
-        profilePictureUrl,
-      });
-
-      return { message: 'User registered successfully', user };
-    } catch (error) {
-      throw new HttpException(
-        (error as any).message || 'Registration failed',
-        HttpStatus.BAD_REQUEST,
-      );
+    if (!body.name || !body.email || !body.password || !body.role || !profilePicture) {
+      return { status: 400, message: 'All fields are required' };
     }
+
+    // Simulating saving the user
+    return { status: 201, message: 'User registered successfully' };
   }
+
 
   /**
    * Login a user

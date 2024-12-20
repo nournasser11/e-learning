@@ -31,21 +31,44 @@ const RegisterPage = () => {
     }
   };
 
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "your_upload_preset"); // Replace with your Cloudinary preset
+    formData.append("cloud_name", "your_cloud_name"); // Replace with your Cloudinary cloud name
+
+    const response = await fetch("https://api.cloudinary.com/v1_1/your_cloud_name/image/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to upload image");
+    }
+
+    const data = await response.json();
+    return data.secure_url; // Cloudinary's uploaded image URL
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append("name", formData.name);
-      formDataToSend.append("email", formData.email);
-      formDataToSend.append("password", formData.password);
-      formDataToSend.append("role", formData.role);
+      let profilePictureUrl = "";
       if (profilePicture) {
-        formDataToSend.append("profilePicture", profilePicture);
+        profilePictureUrl = await uploadToCloudinary(profilePicture);
       }
 
-      await register(formDataToSend);
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        profilePictureUrl, // Send the URL instead of the file
+      };
+
+      await register(payload);
       router.push("/login");
     } catch (error) {
       setErrorMessage("Registration failed. Please try again.");

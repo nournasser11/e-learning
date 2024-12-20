@@ -11,12 +11,16 @@ interface Instructor {
   name: string;
   email: string;
 }
-
 interface Course {
-  _id: string;
+  _id: string; // Add the optional id property
   title: string;
   description: string;
+  instructor: string;
+
+  // Add other course properties as needed
 }
+
+// Removed duplicate Course interface
 
 const SearchInstructor = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,14 +53,21 @@ const SearchInstructor = () => {
   const handleInstructorClick = async (instructorId: string) => {
     setLoading(true);
     setCourses([]);
-    setNoCoursesMessage("");  // Clear previous no courses message
-
+    setNoCoursesMessage(""); // Clear previous no courses message
+  
     try {
       const fetchedCourses = await getCoursesByInstructor(instructorId);
-      if (fetchedCourses.length === 0) {
+  
+      // Transform data to ensure '_id' is present
+      const normalizedCourses = fetchedCourses.map(course => ({
+        ...course,
+        _id: course.id || course._id, // Use `id` if `_id` is not available
+      }));
+  
+      if (normalizedCourses.length === 0) {
         setNoCoursesMessage("Instructor does not teach any courses yet.");
       } else {
-        setCourses(fetchedCourses);
+        setCourses(normalizedCourses);
       }
     } catch (err) {
       console.error("Error fetching courses:", err);
@@ -65,7 +76,7 @@ const SearchInstructor = () => {
       setLoading(false);
     }
   };
-
+  
   const handleCourseClick = (courseId: string) => {
     router.push(`/student/course-details/${courseId}`);
   };
