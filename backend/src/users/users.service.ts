@@ -130,4 +130,16 @@ export class UsersService {
     }
     return null;
   }
+
+  async searchInstructorsByName(name: string): Promise<User[]> {
+    // If name is empty or undefined, you might return an empty array or all instructors
+    if (!name) return [];
+  
+    // Role must be 'instructor', and name partially matches (case-insensitive)
+    return this.userModel.find({
+      role: 'instructor',
+      name: { $regex: name, $options: 'i' },
+    }).exec();
+  }
+  
 }

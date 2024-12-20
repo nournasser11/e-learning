@@ -21,10 +21,9 @@ export class Course {
   @Prop({ required: true })
   description!: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: "User", required: false })
-  instructor?: MongooseSchema.Types.ObjectId; 
-
-
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  instructor: Types.ObjectId;
+  
   @Prop({ default: 1 })
   version!: number;
 

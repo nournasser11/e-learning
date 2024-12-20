@@ -1,3 +1,4 @@
+import { Controller, Post, Get, Body, Param,Query, UseGuards, HttpException, HttpStatus } from '@nestjs/common';
 import {
   Controller,
   Post,
@@ -105,99 +106,19 @@ export class UserController {
     }
   }
 
-  /**
-   * Update profile picture
-   */
-  @Post(':id/upload-profile-picture')
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads/profile-pictures',
-        filename: (req, file, cb) => {
-          const uniqueName = `${Date.now()}-${file.originalname}`;
-          cb(null, uniqueName);
-        },
-      }),
-      fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-          cb(null, true);
-        } else {
-          cb(new BadRequestException('Only image files are allowed!'), false);
-        }
-      },
-    }),
-  )
-  async uploadProfilePicture(
-    @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
-    if (!file) {
-      throw new BadRequestException('No file uploaded');
+  // Update user profile
+  @Post('update/:id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'instructor') // Only admins and instructors can update profiles
+  async updateProfile(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    try {
+      const updatedUser = await this.usersService.update(id, updateUserDto);
+      return { message: 'Profile updated successfully', updatedUser };
+    } catch (error) {
+      throw new HttpException(
+        (error as any).message || 'Error updating profile',
+        HttpStatus.BAD_REQUEST,
+      );
     }
-
-    const profilePictureUrl = `/uploads/profile-pictures/${file.filename}`;
-    await this.usersService.updateProfilePicture(id, profilePictureUrl);
-
-    return { message: 'Profile picture updated successfully', profilePictureUrl };
   }
-
-  /**
-   * Update user password
-   */
-  @Put(':id/update-password')
-  async updatePassword(
-    @Param('id') id: string,
-    @Body() body: { currentPassword: string; newPassword: string },
-  ) {
-    const { currentPassword, newPassword } = body;
-
-    if (!currentPassword || !newPassword) {
-      throw new BadRequestException('Both current and new passwords are required.');
-    }
-
-    const result = await this.usersService.updatePassword(id, currentPassword, newPassword);
-
-    if (!result) {
-      throw new HttpException('Password update failed.', HttpStatus.BAD_REQUEST);
-    }
-
-    return { message: 'Password updated successfully' };
-  }
-
-  /**
-   * Delete user account
-   */
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  async deleteUser(@Param('id') id: string) {
-    const result = await this.usersService.deleteUser(id);
-    if (!result) {
-      throw new NotFoundException('User not found');
-    }
-    return { message: 'User deleted successfully' };
-  }
-  @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  async getUserProfile(@Param('id') id: string) {
-    console.log("Received user ID:", id); // Add this log
-    const user = await this.usersService.findOne(id);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return user;
-  }
-  @Put(':id')
-async updateUser(@Param('id') id: string, @Body() updateData: { name?: string }) {
-  if (!updateData.name) {
-    throw new HttpException('Name field is required', HttpStatus.BAD_REQUEST);
-  }
-
-  const updatedUser = await this.usersService.updateUser(id, updateData);
-  if (!updatedUser) {
-    throw new NotFoundException('User not found');
-  }
-
-  return { message: 'Name updated successfully', user: updatedUser };
 }
-}  
