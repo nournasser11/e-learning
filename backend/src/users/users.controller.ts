@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, UseGuards, HttpException, HttpStatus, } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, UseGuards, HttpException, HttpStatus, Delete, } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { RegisterUserDto } from '../dto/register-user.dto';
 import { LoginUserDto } from '../dto/login-user.dto';
@@ -85,7 +85,17 @@ export class UserController {
     }
   }
 
-
+  @Delete(':userId')
+  async deleteUser(@Param('userId') userId: string): Promise<{ message: string }> {
+    if (!userId) {
+      throw new HttpException('User ID is required', HttpStatus.BAD_REQUEST);
+    }
+    const isDeleted = await this.usersService.removeUserById(userId);
+    if (!isDeleted) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    return { message: 'User deleted successfully' };
+  }
 
   // Update user profile
   @Post('update/:id')

@@ -101,6 +101,10 @@ export class UsersService {
     this.logger.log(`User deleted with ID: ${id}`);
     return user;
   }
+  async removeUserById(userId: string): Promise<boolean> {
+    const user = await this.userModel.findByIdAndDelete(userId);
+    return !!user; // Returns true if a user was deleted, false otherwise.
+  }
 
   // Login
   async login(email: string, password: string) {

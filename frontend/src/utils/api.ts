@@ -67,6 +67,7 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
     }
 };
 
+
 // Utility function for centralized error handling
 const handleAxiosError = (error: any, context: string): never => {
     if (axios.isAxiosError(error)) {
@@ -88,7 +89,7 @@ const withErrorHandling = async <T>(callback: () => Promise<T>, context: string)
     }
 };
 
-// Login function
+
 // Login function
 export const login = async (data: { email: string; password: string }): Promise<{
     accessToken: string;
@@ -150,10 +151,14 @@ export const getInstructors = async (): Promise<User[]> =>
     }, "Get instructors error");
 
 // Delete a user
-export const deleteUser = async (userId: string): Promise<void> =>
-    withErrorHandling(async () => {
-        await axios.delete(`${API_URL}/users/${userId}`);
-    }, "Delete user error");
+export const deleteUser = async (userId: string): Promise<void> => {
+    if (!userId) {
+        throw new Error("User ID is required for deletion.");
+    }
+    await axios.delete(`${API_URL}/users/${userId}`);
+};
+
+
 
 // Update course status (valid, invalid, deleted)
 export const updateCourseStatus = async (
@@ -205,6 +210,7 @@ export const deleteStudent = async (id: string): Promise<{ message: string }> =>
         }
     }
 };
+
 // Axios request interceptor for JWT token
 axios.interceptors.request.use(
     (config) => {

@@ -14,7 +14,8 @@ const ManageStudents: React.FC = () => {
         const fetchStudents = async () => {
             try {
                 const studentsData = await getStudents();
-                setStudents(studentsData);
+                console.log("Fetched Students:", studentsData); // Debug fetched data
+                setStudents(studentsData.map((student: any) => ({ ...student, id: student._id })));
             } catch (error) {
                 console.error("Error fetching students:", error);
             }
@@ -22,7 +23,11 @@ const ManageStudents: React.FC = () => {
         fetchStudents();
     }, []);
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = async (id: string | undefined) => {
+        if (!id) {
+            console.error("No user ID provided for deletion."); // Debug
+            return;
+        }
         try {
             await deleteUser(id);
             setStudents((prev) => prev.filter((student) => student.id !== id));
@@ -31,7 +36,6 @@ const ManageStudents: React.FC = () => {
         }
     };
 
-    // Filter students based on search query
     const filteredStudents = students.filter((student) =>
         student.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -42,8 +46,6 @@ const ManageStudents: React.FC = () => {
                 <h1 className="text-3xl font-bold text-blue-400 mb-6 text-center">
                     Manage Students
                 </h1>
-
-                {/* Search Bar */}
                 <div className="mb-6">
                     <input
                         type="text"
@@ -53,28 +55,24 @@ const ManageStudents: React.FC = () => {
                         className="w-full p-3 bg-gray-800 text-white rounded border border-gray-700 focus:outline-none focus:border-blue-400"
                     />
                 </div>
-
                 <div className="grid gap-4">
                     {filteredStudents.map((student) => (
                         <div
-                            key={student.id || student.email} // Use a unique identifier
+                            key={student.id} // Ensure `id` is used
                             className="bg-gray-800 p-4 rounded shadow-lg flex items-center gap-4"
                         >
-                            {/* Student Profile Picture */}
                             <img
-                                src={student.profilePicture || "/images/default-profile.png"} // Use default if no profile picture
+                                src={student.profilePicture || "/images/default-profile.png"}
                                 alt={student.name}
                                 className="w-16 h-16 rounded-full object-cover border border-gray-600"
                             />
-                            {/* Student Information */}
                             <div className="flex-1">
                                 <h3 className="text-lg font-bold text-blue-400">{student.name}</h3>
                                 <p className="text-gray-400">Email: {student.email}</p>
                             </div>
-                            {/* Delete Button */}
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
-                                onClick={() => handleDelete(student.id)}
+                                onClick={() => handleDelete(student.id)} // Ensure `id` is passed
                                 className="bg-red-500 text-white px-4 py-2 rounded"
                             >
                                 Delete Student
@@ -82,8 +80,6 @@ const ManageStudents: React.FC = () => {
                         </div>
                     ))}
                 </div>
-
-                {/* Back to Dashboard Button */}
                 <motion.button
                     whileHover={{ scale: 1.05 }}
                     onClick={() => router.push("/admin/dashboard")}
