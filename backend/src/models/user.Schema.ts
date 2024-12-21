@@ -8,8 +8,8 @@ export type UserDocument = User & Document;
 export class User extends Document {
   @Prop({ required: true, minlength: 3 })
 name: string;
-
-  @Prop({ type: String, default: () => new mongoose.Types.ObjectId() }) // Automatically generated ID
+ 
+  @Prop({  unique: true })
   userId: string;
 
   @Prop({ required: true, unique: true })
@@ -41,5 +41,12 @@ name: string;
 enrolledCourses?: Types.ObjectId[];
 }
 
+
 export const UserSchema = SchemaFactory.createForClass(User);
 export const UserModel = model<User>('User', UserSchema);
+
+// Pre-save hook to set `courseId` equal to `_id`
+UserSchema.pre('save', function (next) {
+  this.userId = this._id.toString();
+  next();
+});

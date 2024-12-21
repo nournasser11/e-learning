@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Course, CourseDocument } from '../models/courses.Schema';
 import { CreateCourseDto } from '../dto/create-course.dto';
-
+import { UpdateCourseDto } from '../dto/update-course.dto';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class CourseService {
@@ -19,8 +20,49 @@ export class CourseService {
         return this.courseModel.find().exec();
     }
 
-    async findOne(id: string): Promise<Course> {
-        return this.courseModel.findById(id).exec();
+    // async findOne(id: string): Promise<Course | null> {
+    //   try {
+    //     const course = await this.courseModel.findById(id).exec();
+    //     if (!course) {
+    //       return null;
+    //     }
+    //     return course;
+    //   } catch (error) {
+    //     // Handle potential errors like invalid ObjectId errors
+    //     console.error(`Error fetching course with ID ${id}:`, error);
+    //     throw new Error('Database fetch error');
+    //   }
+    // }
+
+    async findOne(courseId: string): Promise<Course> {
+      const course = await this.courseModel.findById(courseId).exec();
+    
+      if (!course) {
+        throw new NotFoundException(`Course with ID ${courseId} not found.`);
+      }
+    
+      return course; // Return the course with module IDs
+    }
+    
+    async updateCourse(id: string, updateCourseDto: UpdateCourseDto): Promise<Course> {
+      const course = await this.courseModel.findById(id);
+      if (!course) {
+        throw new NotFoundException(`Course with ID ${id} not found.`);
+      }
+    
+      // Update fields conditionally
+      if (updateCourseDto.title) course.title = updateCourseDto.title;
+      if (updateCourseDto.description) course.description = updateCourseDto.description;
+      if (updateCourseDto.version) course.version = updateCourseDto.version;
+    
+      try {
+        return await course.save();
+      } catch (error) {
+        throw new HttpException(
+          `Failed to update course: ${(error as Error).message}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
 
 
@@ -42,6 +84,17 @@ export class CourseService {
     return this.courseModel.find({ title: { $regex: regex } }).exec();  // Search courses by title
   }
 
+  async searchByTitleAndInstructor(title: string, instructorId: string): Promise<Course[]> {
+  const regex = new RegExp(title, 'i'); // Case-insensitive regex for title
+  return this.courseModel
+    .find({
+      title: { $regex: regex },
+      instructor: instructorId, // Filter by instructor ID
+    })
+    .exec();
+}
+
+
   // Method to get count of students who completed courses by instructorId
   async getCompletedCoursesByInstructor(instructorId: string) {
     return this.courseModel.aggregate([
@@ -58,4 +111,18 @@ export class CourseService {
     console.log(`Courses found for instructor ${instructorId}:`, courses);
     return courses;
   }
+
+  async findById(courseId: string): Promise<Course> {
+    const course = await this.courseModel
+      .findById(courseId)
+      .populate('modules') // Populate modules array with full module details
+      .exec();
+  
+    if (!course) {
+      throw new NotFoundException(`Course with ID ${courseId} not found.`);
+    }
+  
+    return course;
+  }
+  
 }  
