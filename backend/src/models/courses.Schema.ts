@@ -49,4 +49,3 @@ CourseSchema.pre('save', function (next) {
   this.courseId = this._id.toString();  // Assign `courseId` to `_id`
   next();
 });
-

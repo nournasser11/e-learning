@@ -1,21 +1,33 @@
-import { Controller, Post, Get, Body, Param } from '@nestjs/common';
-import { EnrollmentService } from '../EnrollmentService/enroll.service';
-import { Course } from '../models/courses.Schema'
+import { Controller, Post, Get, Body, Param, NotFoundException } from '@nestjs/common';
+import { EnrollmentService } from './enroll.service';
+import { Course } from 'src/models/courses.Schema';
 
-@Controller('enrollment') // Base route for enrollment
+@Controller('enrollment')
 export class EnrollmentController {
   constructor(private readonly enrollmentService: EnrollmentService) {}
 
-  // POST route to enroll a user in a course
   @Post('enroll')
   async enroll(@Body() body: { userId: string; courseId: string }) {
     return this.enrollmentService.enroll(body.userId, body.courseId);
   }
 
-  // GET route to fetch enrolled courses of a user
+  
   @Get(':userId/courses')
   async getEnrolledCourses(@Param('userId') userId: string): Promise<Course[]> {
     return this.enrollmentService.getEnrolledCourses(userId);
   }
-}
 
+  @Get('course/:courseId')
+  async getEnrollmentsByCourse(@Param('courseId') courseId: string) {
+    return this.enrollmentService.getEnrollmentsByCourse(courseId);
+  }
+
+  @Get('user/find/:userId')
+  async findUserById(@Param('userId') userId: string) {
+    const user = await this.enrollmentService.findUserById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+}

@@ -29,24 +29,21 @@ export class UserController {
 
   /**
    * Register a new user
-   */
-  @Post('register')
-  @UseInterceptors(FileInterceptor('profilePicture')) // To handle multipart/form-data
-  async register(
-    @Body() body: { name: string; email: string; password: string; role: string },
-    @UploadedFile() profilePicture: Express.Multer.File,
-  ) {
-    // Log incoming data for debugging
-    console.log('Received body:', body);
-    console.log('Received file:', profilePicture);
+   */@Post('register')
+   @UseInterceptors(FileInterceptor('profilePicture')) // To handle multipart/form-data
+   async register(
+     @Body() body: { name: string; email: string; password: string; role: string },
+     @UploadedFile() profilePicture: Express.Multer.File,
+   ) {
+     if (!body.name || !body.email || !body.password || !body.role || !profilePicture) {
+       return { status: 400, message: 'All fields are required' };
+     }
+   
+     // Simulating saving the user
+     return { status: 201, message: 'User registered successfully' };
+   }
+   
 
-    if (!body.name || !body.email || !body.password || !body.role || !profilePicture) {
-      return { status: 400, message: 'All fields are required' };
-    }
-
-    // Simulating saving the user
-    return { status: 201, message: 'User registered successfully' };
-  }
 
 
   /**

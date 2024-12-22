@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 import * as mongoose from 'mongoose';
+
 
 export type UserDocument = User & Document;
 
@@ -26,12 +27,9 @@ export class User extends Document {
 
   @Prop({ default: () => new Date() })
   createdAt: Date;
+  @Prop({ type: [MongooseSchema.Types.ObjectId], ref: 'Course', default: [] })
+  enrolledCourses: MongooseSchema.Types.ObjectId[]; // Array of ObjectIds referencing Course
 
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }], // Reference to Course
-    default: [],
-  })
-  enrolledCourses: mongoose.Types.ObjectId[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
