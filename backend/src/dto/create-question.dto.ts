@@ -1,21 +1,20 @@
-export class CreateQuestionDto {
-    readonly title: string;
-    readonly description: string;
-    readonly options: string[];
-    readonly correctAnswer: string;
-    readonly difficulty: 'easy' | 'medium' | 'hard';
+import { IsString, IsEnum, IsOptional, IsArray, MinLength } from 'class-validator';
 
-    constructor(
-        title: string,
-        description: string,
-        options: string[],
-        correctAnswer: string,
-        difficulty: 'easy' | 'medium' | 'hard'
-    ) {
-        this.title = title;
-        this.description = description;
-        this.options = options;
-        this.correctAnswer = correctAnswer;
-        this.difficulty = difficulty;
-    }
+export class CreateQuestionDto {
+  @IsString()
+  questionText: string;
+
+  @IsEnum(['MCQ', 'True/False'], { message: 'Type must be MCQ or True/False' })
+  type: 'MCQ' | 'True/False';
+
+  @IsOptional()
+  @IsArray()
+  @MinLength(2, { each: true, message: 'MCQ must have at least two options.' })
+  options?: string[];
+
+  @IsString()
+  correctAnswer: string;
+
+  @IsEnum(['easy', 'medium', 'hard'], { message: 'Difficulty level must be easy, medium, or hard' })
+  difficultyLevel: 'easy' | 'medium' | 'hard';
 }

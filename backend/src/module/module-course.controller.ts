@@ -1,12 +1,12 @@
 import { Controller, Post,
-   UseInterceptors, Get, Put, Delete, Param, Body,
+   UseInterceptors, Get, Put, Delete, Param, Body, ParseIntPipe,
     NotFoundException, InternalServerErrorException,UploadedFile,
      BadRequestException } from '@nestjs/common';
 import { ModulesService } from './module-course.service';
 import { CreateModuleDto } from 'src/dto/create-module.dto';
 import { UpdateModuleDto } from 'src/dto/update-module.dto';
 import { QuestionDto } from 'src/dto/create-module.dto';
-import { ModuleDocument, Module } from 'src/models/modules.Schema';
+import { ModuleDocument, Module,QuizConfiguration } from 'src/models/modules.Schema';
 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -103,6 +103,47 @@ async upload(
     }
   }
 
+  @Put(':moduleId/questions/:questionIndex')
+  async editQuestion(
+    @Param('courseId') courseId: string,
+    @Param('moduleId') moduleId: string,
+    @Param('questionIndex', ParseIntPipe) questionIndex: number, // Ensures questionIndex is an integer
+    @Body() questionDto: QuestionDto
+  ) {
+    const updatedModule = await this.modulesService.editQuestion(
+      courseId,
+      moduleId,
+      questionIndex,
+      questionDto
+    );
+
+    if (!updatedModule) {
+      throw new NotFoundException('Failed to update the question. Module or question not found.');
+    }
+
+    return {
+      message: 'Question updated successfully',
+      updatedModule,
+    };
+  }
+
+@Put(':moduleId/quiz-configuration')
+async editQuizConfiguration(
+  @Param('moduleId') moduleId: string,
+  @Body() quizConfiguration: QuizConfiguration
+) {
+  const updatedModule = await this.modulesService.editQuizConfiguration(
+    moduleId,
+    quizConfiguration
+  );
+
+  return {
+    message: 'Quiz configuration updated successfully',
+    module: updatedModule,
+  };
+}
+
+
 
 
 
@@ -112,7 +153,7 @@ async upload(
   }
 
    @Get(':moduleId')
-  async getModuleById(
+    async getModuleById(
     @Param('courseId') courseId: string,
     @Param('moduleId') moduleId: string,
   ) {
@@ -159,28 +200,25 @@ async upload(
 }
 
 
-  @Post(':moduleId/questions')
-  async addQuestionToModule(
-    @Param('courseId') courseId: string,
-    @Param('moduleId') moduleId: string,
-    @Body() questionDto: QuestionDto
-  ) {
-    const updatedModule = await this.modulesService.addQuestion(
-      courseId,
-      moduleId,
-      questionDto
-    );
 
-    if (!updatedModule) {
-      throw new NotFoundException(
-        `Module with ID ${moduleId} not found in course ${courseId}`
-      );
-    }
+@Post(':moduleId/questions')
+async addQuestionToModule(
+  @Param('courseId') courseId: string,
+  @Param('moduleId') moduleId: string,
+  @Body() questionDto: QuestionDto
+) {
+  const updatedModule = await this.modulesService.addQuestion(
+    courseId,
+    moduleId,
+    questionDto
+  );
 
-    return {
-      message: 'Question added successfully',
-      module: updatedModule,
-    };
-  }
+  return {
+    message: 'Question added successfully',
+    module: updatedModule,
+  };
 }
+
+}
+
 

@@ -2,11 +2,11 @@ import { Injectable, NotFoundException, BadRequestException, InternalServerError
 import mongoose from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { ModuleDocument, Module } from 'src/models/modules.Schema';
+import { ModuleDocument, Module,QuizConfiguration } from 'src/models/modules.Schema';
 import { CourseDocument, Course } from 'src/models/courses.Schema'; // Import Course model
 import { CreateModuleDto } from 'src/dto/create-module.dto';
 import { UpdateModuleDto } from 'src/dto/update-module.dto';
-import { QuestionDto } from 'src/dto/create-module.dto'; // Import QuestionDto
+import { QuestionDto } from 'src/dto/create-module.dto'; // Import QuestionDto and QuizConfiguration
 
 @Injectable()
 export class ModulesService {
@@ -67,6 +67,62 @@ export class ModulesService {
       console.error('Error creating module:', error);
       throw new BadRequestException('Failed to create module. Please try again.');
     }
+  }
+  
+  async editQuestion(
+    courseId: string,
+    moduleId: string,
+    questionIndex: number,
+    questionDto: QuestionDto
+  ): Promise<Module> {
+    const module = await this.moduleModel.findOne({ _id: moduleId, courseId }).exec();
+
+    if (!module) {
+      throw new NotFoundException(`Module with ID ${moduleId} not found in course ${courseId}`);
+    }
+
+    if (questionIndex < 0 || questionIndex >= module.questionBank.length) {
+      throw new BadRequestException(`Invalid question index: ${questionIndex}`);
+    }
+
+    // Validate options only if the question type is MCQ
+    if (questionDto.type === 'MCQ') {
+      if (!questionDto.options || questionDto.options.length < 2) {
+        throw new BadRequestException('MCQ questions must have at least two options.');
+      }
+    }
+
+    // Ensure the correct answer is part of the options if it's an MCQ
+    if (
+      questionDto.type === 'MCQ' &&
+      questionDto.options &&
+      !questionDto.options.includes(questionDto.correctAnswer)
+    ) {
+      throw new BadRequestException('Correct answer must be one of the provided options.');
+    }
+
+    // Update the question at the specified index
+    module.questionBank[questionIndex] = questionDto;
+
+    // Save the module with the updated question
+    await module.save();
+    return module;
+  }
+
+  
+  async editQuizConfiguration(
+    moduleId: string,
+    quizConfiguration: QuizConfiguration
+  ): Promise<Module> {
+    const module = await this.moduleModel.findById(moduleId).exec();
+    
+    if (!module) {
+      throw new NotFoundException(`Module with ID ${moduleId} not found`);
+    }
+  
+    // Update the quiz configuration
+    module.quizConfiguration = quizConfiguration;
+    return await module.save();
   }
   
 
@@ -160,26 +216,26 @@ export class ModulesService {
     moduleId: string,
     questionDto: QuestionDto
   ): Promise<Module> {
-    // Find the module with the specified courseId and moduleId
-    const module = await this.moduleModel.findOne({
-      _id: moduleId,
-      courseId: courseId,
-    });
-
+    const module = await this.moduleModel.findOne({ _id: moduleId, courseId }).exec();
+  
     if (!module) {
-      throw new NotFoundException(
-        `Module with ID ${moduleId} not found in course ${courseId}`
-      );
+      throw new NotFoundException(`Module with ID ${moduleId} not found in course ${courseId}`);
     }
-
-    // Push the new question to the questionBank
+  
+    console.log('Adding question to module:', moduleId);
+    
     module.questionBank.push(questionDto);
-
-    // Save the updated module document
-    await module.save();
-
+  
+    try {
+      await module.save();
+    } catch (error) {
+      throw new BadRequestException('Failed to save the module. Ensure all fields are valid.');
+    }
+  
     return module;
   }
+  
+
 }
 
 

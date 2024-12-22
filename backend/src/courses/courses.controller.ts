@@ -35,18 +35,20 @@ export class CourseController {
         return course; // Return the fetched course
       } catch (error) {
         // Log the error internally
-        console.error('Error fetching course with ID:', id, error);
+        console.error('Error fetching course with ID:', id, (error as any).message || error);
     
         // Check if the error is already an HTTP exception
         if (!(error instanceof HttpException)) {
-          throw new HttpException('Failed to fetch course', HttpStatus.INTERNAL_SERVER_ERROR);
+          throw new HttpException(
+            'Failed to fetch course',
+            HttpStatus.INTERNAL_SERVER_ERROR
+          );
         }
     
         throw error; // Re-throw the original error if it was an HTTP exception
       }
+    }
     
-    
-  }
 
   @Put('/update/:id')
   async updateCourse(

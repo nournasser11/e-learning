@@ -35,14 +35,26 @@ export class CourseService {
     // }
 
     async findOne(courseId: string): Promise<Course> {
-      const course = await this.courseModel.findById(courseId).exec();
+      try {
+        // Use populate to fetch related data
+        const course = await this.courseModel
+          .findById(courseId)
+          .populate('modules') // Populate modules if referenced in the schema
+          .populate('completedStudents', 'name email') // Fetch only specific fields (e.g., name, email)
+          .populate('assignedStudents', 'name email') // Fetch only specific fields
+          .exec();
     
-      if (!course) {
-        throw new NotFoundException(`Course with ID ${courseId} not found.`);
+        if (!course) {
+          throw new NotFoundException(`Course with ID ${courseId} not found.`);
+        }
+    
+        return course; // Return the course with populated data
+      } catch (error) {
+        console.error(`Error fetching course with ID ${courseId}:`, (error as Error).message || error);
+        throw new HttpException('Failed to fetch course', HttpStatus.INTERNAL_SERVER_ERROR);
       }
-    
-      return course; // Return the course with module IDs
     }
+    
     
     async updateCourse(id: string, updateCourseDto: UpdateCourseDto): Promise<Course> {
       const course = await this.courseModel.findById(id);

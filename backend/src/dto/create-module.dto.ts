@@ -39,6 +39,11 @@ export class QuestionDto {
   @IsString()
   @IsNotEmpty({ message: 'Correct answer is required' })
   correctAnswer: string;
+
+  @IsString()
+  @IsIn(['easy', 'medium', 'hard'], { message: 'Difficulty level must be easy, medium, or hard' })
+  @IsNotEmpty({ message: 'Difficulty level is required' })
+  difficultyLevel: 'easy' | 'medium' | 'hard';
 }
 
 export class CreateModuleDto {

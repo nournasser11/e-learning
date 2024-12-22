@@ -31,6 +31,11 @@ export class Question {
 
   @Prop({ required: true })
   correctAnswer: string; // For True/False: "True" or "False"
+  @Prop({
+    required: true,
+    enum: ['easy', 'medium', 'hard'], // Restrict to these difficulty levels
+  })
+  difficultyLevel: 'easy' | 'medium' | 'hard'; // Difficulty level of the question
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);
