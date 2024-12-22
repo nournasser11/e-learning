@@ -11,6 +11,6 @@ export class WebSocketGatewayService implements OnGatewayInit {
   }
 
   sendNotification(notification: any) {
-    this.server.emit('notification', notification); // Emitting notification to all connected clients
+    this.server.emit('notification', notification); // Emitting to all connected clients
   }
 }

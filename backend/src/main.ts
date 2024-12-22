@@ -10,6 +10,9 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.useLogger(['log', 'error', 'warn', 'debug', 'verbose']);
   app.use(cors());
+  // Example of setting a global prefix
+
+
   await app.listen(3000);
 }
 bootstrap();

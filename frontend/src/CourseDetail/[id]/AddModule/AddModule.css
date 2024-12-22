@@ -1,0 +1,112 @@
+.container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    font-family: 'Roboto', sans-serif;
+    color: #e2e8f0; /* Light Gray Text */
+    background-color: #1a202c; /* Dark Background */
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* Subtle shadow for night mode */
+  }
+  
+  .title {
+    text-align: center;
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #63b3ed; /* Light Blue */
+    margin-bottom: 30px;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .form-section {
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #2d3748; /* Darker Gray Background */
+    border: 1px solid #4a5568; /* Subtle Border */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+  }
+  
+  .form-section h2 {
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+    color: #63b3ed; /* Light Blue */
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #e2e8f0; /* Light Gray Text */
+    margin-bottom: 8px;
+  }
+  
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    border: 1px solid #4a5568; /* Gray Border */
+    border-radius: 6px;
+    background-color: #2d3748; /* Darker Gray Background */
+    color: #e2e8f0; /* Light Gray Text */
+  }
+  
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: #63b3ed; /* Blue Border on Focus */
+    outline: none;
+    background-color: #1a202c; /* Dark Background on Focus */
+  }
+  
+  .question-group {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #4a5568; /* Subtle Border */
+    border-radius: 8px;
+    background-color: #2d3748; /* Slightly Dark Gray */
+  }
+  
+  .question-group h3 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+    color: #63b3ed; /* Blue Heading */
+  }
+  
+  .submit-button {
+    padding: 12px 25px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    background-color: #3182ce; /* Blue */
+    color: #e2e8f0; /* Light Gray */
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .submit-button:hover {
+    background-color: #2b6cb0; /* Darker Blue */
+    transform: translateY(-2px); /* Slight hover lift */
+  }
+  
+  .submit-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.5); /* Blue Focus Outline */
+  }
+  
+  .error-message {
+    color: #e53e3e; /* Red color for errors */
+    font-size: 0.875rem; /* Small font size */
+    margin-top: 5px;
+    font-weight: bold;
+  }

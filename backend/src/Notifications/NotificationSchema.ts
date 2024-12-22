@@ -1,16 +1,24 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
+export type NotificationDocument = Notification & Document;
+
 @Schema()
-export class Notification extends Document {
+export class Notification {
   @Prop({ required: true })
-  recipientId: string; // User ID of the recipient (student/instructor)
+  recipientId: string; // The ID of the user receiving the notification
 
   @Prop({ required: true })
-  type: string; // 'message', 'reply', or 'announcement'
+  senderId: string; // The ID of the user sending the notification
 
   @Prop({ required: true })
-  content: string; // Content of the notification
+  type: string; // Notification type: 'message', 'reply', or 'announcement'
+
+  @Prop({ required: true })
+  content: string; // Notification content
+
+  @Prop({ required: false })
+  courseId?: string; // Optional for course-related notifications
 
   @Prop({ default: false })
   isRead: boolean; // Whether the notification is read

@@ -5,51 +5,22 @@ import { useRouter } from "next/navigation";
 import Layout from "../components/Layout";
 import Button from "../components/Button";
 import { motion } from "framer-motion";
+import { BellIcon } from "@heroicons/react/outline"; // Notification icon
 
 const HomePage = () => {
   const router = useRouter();
 
   const courses = [
-    {
-      title: "Introduction to Programming",
-      image: "/images/programming.jpg",
-    },
-    {
-      title: "Mathematics 1",
-      image: "/images/mathematics.jpg",
-    },
-    {
-      title: "Advanced Data Structures",
-      image: "/images/data-structures.jpg",
-    },
-    {
-      title: "Machine Learning",
-      image: "/images/machine-learning.webp",
-    },
-    {
-      title: "Data Engineering and Visualization",
-      image: "/images/data-engineering.jpg",
-    },
-    {
-      title: "Software Design and Architecture",
-      image: "/images/programming.jpg",
-    },
-    {
-      title: "Database Programming",
-      image: "/images/database-programming.jpg",
-    },
-    {
-      title: "Requirement Engineering",
-      image: "/images/data-structures.jpg",
-    },
-    {
-      title: "Software Mobile Security",
-      image: "/images/mobile-security.jpg",
-    },
-    {
-      title: "Cryptography",
-      image: "/images/cryptography.jpg",
-    },
+    { title: "Introduction to Programming", image: "/images/programming.jpg" },
+    { title: "Mathematics 1", image: "/images/mathematics.jpg" },
+    { title: "Advanced Data Structures", image: "/images/data-structures.jpg" },
+    { title: "Machine Learning", image: "/images/machine-learning.webp" },
+    { title: "Data Engineering and Visualization", image: "/images/data-engineering.jpg" },
+    { title: "Software Design and Architecture", image: "/images/programming.jpg" },
+    { title: "Database Programming", image: "/images/database-programming.jpg" },
+    { title: "Requirement Engineering", image: "/images/data-structures.jpg" },
+    { title: "Software Mobile Security", image: "/images/mobile-security.jpg" },
+    { title: "Cryptography", image: "/images/cryptography.jpg" },
   ];
 
   return (
@@ -68,10 +39,12 @@ const HomePage = () => {
         >
           Create an Account
         </Button>
+
+
       </div>
 
       {/* Full Page Container */}
-      <div className="relative min-h-screen bg-black text-white px-4 pt-20 pb-8"> {/* Added pt-20 to prevent overlap */}
+      <div className="relative min-h-screen bg-black text-white px-4 pt-20 pb-8">
         {/* Hero Section */}
         <div className="text-center mb-12">
           <motion.h1
@@ -88,7 +61,8 @@ const HomePage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.5 }}
           >
-            Explore a variety of courses and connect with top instructors to advance your learning journey. Learn, grow, and excel from the comfort of your home.
+            Explore a variety of courses and connect with top instructors to advance your
+            learning journey. Learn, grow, and excel from the comfort of your home.
           </motion.p>
         </div>
 
@@ -142,11 +116,10 @@ const HomePage = () => {
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-white mb-6">About E-Learn</h2>
           <p className="text-lg text-gray-400 max-w-3xl mx-auto">
-            E-Learn is a cutting-edge platform offering a diverse range of courses
-            designed to empower learners worldwide. From programming to data
-            engineering, our expertly crafted content and experienced instructors
-            ensure that you achieve your educational goals with ease and
-            convenience.
+            E-Learn is a cutting-edge platform offering a diverse range of courses designed to
+            empower learners worldwide. From programming to data engineering, our expertly
+            crafted content and experienced instructors ensure that you achieve your
+            educational goals with ease and convenience.
           </p>
         </div>
 

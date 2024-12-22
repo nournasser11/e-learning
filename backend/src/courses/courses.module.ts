@@ -12,5 +12,6 @@ import { Progress, ProgressSchema } from '../models/progress.schema';
   ],
   controllers: [CourseController],
   providers: [CourseService],
+  exports: [MongooseModule], // Export MongooseModule so it can be used in other modules
 })
-export class CourseModule {}
+export class CourseModule { }
