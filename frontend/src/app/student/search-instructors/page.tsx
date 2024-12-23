@@ -61,7 +61,7 @@ const SearchInstructor = () => {
       // Transform data to ensure '_id' is present
       const normalizedCourses = fetchedCourses.map(course => ({
         ...course,
-        _id: course.id || course._id, // Use `id` if `_id` is not available
+        _id: course.id || course._id, // Use id if _id is not available
       }));
   
       if (normalizedCourses.length === 0) {
@@ -78,7 +78,7 @@ const SearchInstructor = () => {
   };
   
   const handleCourseClick = (courseId: string) => {
-    router.push(`/student/course-details/${courseId}`);
+    router.push('/student/course-details/${courseId}');
   };
 
   return (

@@ -1,4 +1,3 @@
-
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import * as mongoose from 'mongoose';
@@ -23,4 +22,4 @@ export class Note extends Document{
 }
 
 export const NotesSchema = SchemaFactory.createForClass(Note);
-export type NoteDocument= Note & Document; 
+export type NoteDocument= Note & Document;

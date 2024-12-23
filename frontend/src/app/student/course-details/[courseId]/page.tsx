@@ -26,7 +26,7 @@ export default function CourseDetails() {
     // Fetch course details
     const fetchCourseDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/courses/${courseId}`);
+        const response = await axios.get('http://localhost:3000/courses/${courseId}');
         setCourse(response.data);
       } catch (err) {
         console.error("Error fetching course details:", err);

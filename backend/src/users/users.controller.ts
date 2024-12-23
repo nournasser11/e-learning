@@ -22,66 +22,41 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import {AuthService} from '../auth/auth.service';
+import * as bcrypt from 'bcrypt';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly usersService: UsersService) {}
-
-  /**
-   * Register a new user
-   */
-  @Post('register')
-  @UseInterceptors(FileInterceptor('profilePicture')) // To handle multipart/form-data
-  async register(
-    @Body() body: { name: string; email: string; password: string; role: string },
-    @UploadedFile() profilePicture: Express.Multer.File,
-  ) {
-    // Log incoming data for debugging
-    console.log('Received body:', body);
-    console.log('Received file:', profilePicture);
-
-    if (!body.name || !body.email || !body.password || !body.role || !profilePicture) {
-      return { status: 400, message: 'All fields are required' };
-    }
-
-    // Simulating saving the user
-    return { status: 201, message: 'User registered successfully' };
+// Register a new user
+@Post('register')
+async register(@Body() registerUserDto: RegisterUserDto) {
+  try {
+    const user = await this.usersService.create(registerUserDto);
+    return { message: 'User registered successfully', user };
+  } catch (error) {
+    throw new HttpException(
+      (error as any).message || 'Error registering user',
+      HttpStatus.BAD_REQUEST,
+    );
   }
+}
 
 
-  /**
-   * Login a user
-   */
+
+ 
   @Post('login')
   async login(@Body() loginUserDto: LoginUserDto) {
-    try {
-      const { email, password } = loginUserDto;
-
-      if (!email || !password) {
-        throw new HttpException(
-          'Email and password are required',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      const result = await this.usersService.login(email, password);
-
-      return {
-        message: 'Login successful',
-        accessToken: result.accessToken,
-        role: result.role,
-        _id: result._id,
-        name: result.name,
-        profilePicture: result.profilePicture || null,
-      };
-    } catch (error) {
-      console.error('Login error:', (error as any).message);
-
-      throw new HttpException(
-        (error as any).message || 'Invalid credentials',
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
+    const { email, password } = loginUserDto;
+    const { accessToken, role, _id, name } = await this.usersService.login(email, password);
+    
+    return {
+      message: 'Login successful',
+      accessToken,
+      role, // Include the role in the response
+      _id,  // Include the _id in the response
+      name, // Include the name in the response
+    };
   }
 
   /**

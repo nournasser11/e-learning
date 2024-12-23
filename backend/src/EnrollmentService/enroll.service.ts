@@ -1,53 +1,98 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User, UserDocument } from '../models/user.schema'; // Adjust the path based on your project structure
-import { Course, CourseDocument } from '../models/courses.schema'; // Adjust the path based on your project structure
-import mongoose from 'mongoose';
+import { Model, Types } from 'mongoose';
+import { Enrollment, EnrollmentDocument } from './enroll.schema';
+import { User, UserDocument } from '../models/user.schema';
+import { Course, CourseDocument } from '../models/courses.schema';
+
 @Injectable()
 export class EnrollmentService {
   constructor(
+    @InjectModel(Enrollment.name) private readonly enrollmentModel: Model<EnrollmentDocument>,
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(Course.name) private readonly courseModel: Model<CourseDocument>,
   ) {}
 
-  async enroll(userId: string, courseId: string): Promise<any> {
-    const user = await this.userModel.findById(userId); // Fetch the user by ID
-    const course = await this.courseModel.findById(courseId); // Fetch the course by ID
+  async enroll(userId: string, courseId: string): Promise<Enrollment> {
+    try {
+      console.log("Enroll function called with:", { userId, courseId }); // Debugging log
   
-    if (!user) {
-      throw new NotFoundException('User not found');
+      // Convert userId and courseId to ObjectId
+      const userObjectId = new Types.ObjectId(userId);
+      const courseObjectId = new Types.ObjectId(courseId);
+  
+      // Step 1: Validate User and Course
+      const user = await this.userModel.findById(userObjectId);
+      if (!user) {
+        throw new NotFoundException("User not found");
+      }
+  
+      const course = await this.courseModel.findById(courseObjectId);
+      if (!course) {
+        throw new NotFoundException("Course not found");
+      }
+  
+      // Step 2: Check if User is Already Enrolled
+      const existingEnrollment = await this.enrollmentModel.findOne({
+        userId: userObjectId,
+        courseId: courseObjectId,
+      });
+      if (existingEnrollment) {
+        throw new ConflictException("User is already enrolled in this course");
+      }
+  
+      // Step 3: Add the Course to User's Enrolled Courses
+      if (!user.enrolledCourses.includes(courseObjectId)) {
+        user.enrolledCourses.push(courseObjectId);
+        await user.save(); // Save updated user document
+      }
+  
+      // Step 4: Add the User to Course's Enrolled Users
+      if (!course.enrolledUsers.includes(userObjectId.toString())) {
+        course.enrolledUsers.push(userObjectId.toString());
+        await course.save(); // Save updated course document
+      }
+  
+      // Step 5: Create and Save Enrollment Record
+      const newEnrollment = new this.enrollmentModel({
+        userId: userObjectId,
+        courseId: courseObjectId,
+      });
+      const savedEnrollment = await newEnrollment.save();
+  
+      console.log("Enrollment saved successfully:", savedEnrollment);
+      return savedEnrollment;
+    } catch (error) {
+      console.error("Error during enrollment:", error);
+      throw error;
     }
-  
-    if (!course) {
-      throw new NotFoundException('Course not found');
-    }
-  
-    // Convert courseId to ObjectId
-    const courseObjectId = new mongoose.Types.ObjectId(courseId);
-  
-    if (user.enrolledCourses.includes(courseObjectId)) {
-      throw new ConflictException('User already enrolled in this course');
-    }
-  
-    // Add course to user's enrolled courses
-    user.enrolledCourses.push(courseObjectId);
-  
-    // Add user to course's enrolled users
-    course.enrolledUsers.push(userId);
-  
-    await user.save(); // Save the updated user
-    await course.save(); // Save the updated course
-  
-    return { message: 'Enrolled successfully!' };
   }
-  async getEnrolledCourses(userId: string): Promise<Course[]> {
-    const user = await this.userModel.findById(userId).populate('enrolledCourses');
+  
+  async getEnrollmentsByUser(userId: string): Promise<Enrollment[]> {
+    const userObjectId = new Types.ObjectId(userId);
+    return this.enrollmentModel.find({ userId: userObjectId }).populate('courseId').exec();
+  }
+
+  async getEnrollmentsByCourse(courseId: string) {
+    const course = await this.courseModel.findOne({ courseId }).populate('modules');
+    if (!course) {
+      throw new NotFoundException("Course not found");
+    }
+  
+    const enrollments = await this.enrollmentModel.find({ courseId: course._id }).populate('userId');
+    return {
+      course,
+      enrollments,
+    };
+  }
+  
+
+  async findUserById(userId: string): Promise<User | null> {
+    const userObjectId = new Types.ObjectId(userId);
+    const user = await this.userModel.findById(userObjectId).exec();
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const courses = await this.courseModel.find({ _id: { $in: user.enrolledCourses } });
-    return courses; // Return the courses
+    return user;
   }
 }
-

@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, Schema as MongooseSchema } from 'mongoose';
+import { IsOptional, IsString } from 'class-validator';
 
 export type ModuleDocument = Module & Document;
 
@@ -60,20 +61,23 @@ export class Module {
   @Prop({ required: true, type: MongooseSchema.Types.ObjectId, ref: 'Course' })
   courseId!: MongooseSchema.Types.ObjectId;
 
+  @IsOptional()
+  @IsString()
+  file?: string; // Store the filename or file path for uploaded content
+
   @Prop({ required: true })
   title!: string;
 
-  // Fix: Treat content as an object with separate fields for url and type
   @Prop({ required: true })
-  contentUrl!: string;  // URL of the multimedia
+  contentUrl!: string; // URL of the multimedia
 
   @Prop({ required: true, enum: ['pdf', 'video'] })
-  contentType!: 'pdf' | 'video';  // Type ('pdf' or 'video')
+  contentType!: 'pdf' | 'video'; // Type ('pdf' or 'video')
 
   @Prop({ type: [String], default: [] })
   resources?: string[];
 
-  @Prop({ type: [QuestionSchema], default: [] })  // Question bank
+  @Prop({ type: [QuestionSchema], default: [] }) // Question bank
   questionBank: Question[];
 
   @Prop({ type: QuizConfigurationSchema, required: true })

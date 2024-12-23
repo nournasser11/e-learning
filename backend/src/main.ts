@@ -7,34 +7,33 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { diskStorage } from 'multer';
 import { MulterModule } from '@nestjs/platform-express';
+import * as path from 'path';
 
 dotenv.config();
 
 async function bootstrap() {
+  // Log the MongoDB URI for debugging purposes
   console.log('MONGODB_URI:', process.env.MONGODB_URI);
+
+  // Create the Nest application as a NestExpressApplication
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Apply global validation pipes for DTO validation
   app.useGlobalPipes(new ValidationPipe());
-  app.useLogger(['log', 'error', 'warn', 'debug', 'verbose']);
+
+  // Enable CORS for cross-origin requests
   app.use(cors());
 
-  // Serve static files from the 'uploads' folder
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads/',
+  // Serve static assets from the "uploads" folder
+  app.useStaticAssets(path.join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads', // Accessible via "/uploads" URL
   });
 
-  // Configure MulterModule for file uploads
-  MulterModule.register({
-    storage: diskStorage({
-      destination: './uploads/profile-pictures',
-      filename: (req, file, cb) => {
-        const uniqueName = `${Date.now()}-${file.originalname}`;
-        cb(null, uniqueName);
-      },
-    }),
-  });
 
-  await app.listen(3000);
-  console.log('Server is running on http://localhost:3000');
+  // Start the server and listen on port 3000
+  const port = process.env.PORT || 3000;
+  console.log(`Application is running on: http://localhost:${port}`);
+  await app.listen(port);
 }
 
 bootstrap();

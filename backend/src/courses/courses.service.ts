@@ -3,7 +3,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Course, CourseDocument } from '../models/courses.Schema';
 import { CreateCourseDto } from '../dto/create-course.dto';
-
+import { UpdateCourseDto } from '../dto/update-course.dto';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
 @Injectable()
 export class CourseService {
@@ -36,9 +37,36 @@ export class CourseService {
       return this.courseModel.find().populate('instructor', 'name email').exec();
   }
   
-    async findOne(id: string): Promise<Course> {
-        return this.courseModel.findById(id).populate('instructor', 'name email') // Populate instructor's name and email
-        .exec();
+
+    async findOne(courseId: string): Promise<Course> {
+      const course = await this.courseModel.findById(courseId).populate('instructor', 'name email').exec();
+    
+      if (!course) {
+        throw new NotFoundException(`Course with ID ${courseId} not found.`);
+      }
+    
+      return course; // Return the course with module IDs
+    }
+    
+    async updateCourse(id: string, updateCourseDto: UpdateCourseDto): Promise<Course> {
+      const course = await this.courseModel.findById(id);
+      if (!course) {
+        throw new NotFoundException(`Course with ID ${id} not found.`);
+      }
+    
+      // Update fields conditionally
+      if (updateCourseDto.title) course.title = updateCourseDto.title;
+      if (updateCourseDto.description) course.description = updateCourseDto.description;
+      if (updateCourseDto.version) course.version = updateCourseDto.version;
+    
+      try {
+        return await course.save();
+      } catch (error) {
+        throw new HttpException(
+          `Failed to update course: ${(error as Error).message}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
 
 
@@ -60,6 +88,17 @@ export class CourseService {
     return this.courseModel.find({ title: { $regex: regex } }).exec();
   }
 
+  async searchByTitleAndInstructor(title: string, instructorId: string): Promise<Course[]> {
+  const regex = new RegExp(title, 'i'); // Case-insensitive regex for title
+  return this.courseModel
+    .find({
+      title: { $regex: regex },
+      instructor: instructorId, // Filter by instructor ID
+    })
+    .exec();
+}
+
+
   // Method to get count of students who completed courses by instructorId
   async getCompletedCoursesByInstructor(instructorId: string) {
     return this.courseModel.aggregate([
@@ -74,6 +113,19 @@ export class CourseService {
     const courses = await this.courseModel.find({ instructor: new Types.ObjectId(instructorId) }).exec();
     console.log(`Courses found for instructor ${instructorId}:`, courses);
     return courses;
-}
+  }
 
+  async findById(courseId: string): Promise<Course> {
+    const course = await this.courseModel
+      .findById(courseId)
+      .populate('modules') // Populate modules array with full module details
+      .exec();
+  
+    if (!course) {
+      throw new NotFoundException(`Course with ID ${courseId} not found.`);
+    }
+  
+    return course;
+  }
+  
 }  

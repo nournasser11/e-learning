@@ -12,6 +12,7 @@ import { RegisterUserDto } from '../dto/register-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import {LoginUserDto} from '../dto/login-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -23,26 +24,26 @@ export class UsersService {
   ) {}
 
   // Create a new user
-  async create(registerUserDto: RegisterUserDto): Promise<User> {
-    const { email, password, profilePictureUrl } = registerUserDto;
+// Create a new user
+async create(createUserDto: RegisterUserDto): Promise<User> {
+  const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
-    const existingUser = await this.userModel.findOne({ email });
-    if (existingUser) {
-      throw new BadRequestException('Email is already registered');
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new this.userModel({
-      ...registerUserDto,
-      passwordHash: hashedPassword,
-      profilePicture: profilePictureUrl || '',
-      role: registerUserDto.role || 'student',
-    });
-
-    return await newUser.save();
+  // Ensure unique email (validation before creating the user)
+  const existingUser = await this.userModel.findOne({ email: createUserDto.email });
+  if (existingUser) {
+    throw new UnauthorizedException('Email is already registered');
   }
 
+  const newUser = new this.userModel({
+    ...createUserDto,
+    passwordHash: hashedPassword,
+    role: createUserDto.role || 'student', // Default to 'student'
+  });
+
+  const savedUser = await newUser.save();
+  return savedUser;
+}
+  
   // Find all users
   async findAll(): Promise<User[]> {
     return this.userModel.find().exec();
@@ -109,10 +110,14 @@ export class UsersService {
   // Login (JWT Generation)
   async login(email: string, password: string) {
     const user = await this.userModel.findOne({ email });
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isPasswordValid) throw new UnauthorizedException('Invalid credentials');
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
     const accessToken = this.jwtService.sign({ email, sub: user._id });
 
@@ -121,18 +126,12 @@ export class UsersService {
       role: user.role,
       _id: user._id,
       name: user.name,
-      profilePicture: user.profilePicture,
     };
   }
+  
 
   // Validate user for JWT Guards
-  async validateUser(email: string, password: string): Promise<User | null> {
-    const user = await this.userModel.findOne({ email }).exec();
-    if (user && (await bcrypt.compare(password, user.passwordHash))) {
-      return user;
-    }
-    return null;
-  }
+ 
 
   async searchInstructorsByName(name: string): Promise<User[]> {
     // If name is empty or undefined, you might return an empty array or all instructors
@@ -146,3 +145,11 @@ export class UsersService {
   }
   
 }
+
+    // return {
+    //   accessToken,
+    //   role: user.role,
+    //   _id: user._id,
+    //   name: user.name,
+    //   profilePicture: user.profilePicture,
+    // };

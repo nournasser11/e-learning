@@ -1,56 +1,51 @@
-import { Injectable, Logger, NotFoundException} from '@nestjs/common';
+ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model,Types } from 'mongoose';
-import { Note , NoteDocument} from '../models/notes.Schema';
+import { Model } from 'mongoose';
+import { Note, NoteDocument } from 'src/models/notes.schema';
 import { CreateNoteDto } from 'src/dto/create-note.dto';
 import { UpdateNoteDto } from 'src/dto/update-note.dto';
 
-
 @Injectable()
 export class NotesService {
-  private readonly logger = new Logger(NotesService.name);
-
   constructor(@InjectModel(Note.name) private noteModel: Model<NoteDocument>) {}
 
-  async create(createNoteDto: CreateNoteDto, userId: string): Promise<Note> {
-    this.logger.log('Creating a new note');
-    const newNote = new this.noteModel({ ...createNoteDto, userId });
-    return newNote.save();
+  async findAll(userId: string, courseId: string): Promise<Note[]> {
+    return this.noteModel.find({ userId, courseId }).exec(); // Get notes by userId and courseId
   }
 
-  async findAll(userId: string): Promise<Note[]> {
-    return this.noteModel.find({ userId }).exec();
+  async create(createNoteDto: CreateNoteDto): Promise<Note> {
+    const newNote = new this.noteModel(createNoteDto);
+    return newNote.save(); // Save the new note
   }
 
-
-  async findOne(noteId: string, userId:string): Promise<Note> {
-    const query = {noteId, userId };
-    const note = await this.noteModel.findOne(query).exec();
-    if (!note) {
-      throw new NotFoundException(`Note with ID ${noteId} not found`);
-    }
+  // Update a note
+  async update(
+    noteId: string,
+    updateNoteDto: UpdateNoteDto,
+    courseId: string
+  ): Promise<Note> {
+    const updatedNote = await this.noteModel.findOneAndUpdate(
+      { noteId, courseId },
+      { $set: updateNoteDto },
+      { new: true } // Return the updated note
+    ).exec();
   
-    return note;
-  }
-  
-  async update(noteId: string, updateNoteDto: UpdateNoteDto, userId: string): Promise<Note> {
-    const updatedNote = await this.noteModel
-      .findOneAndUpdate({noteId, userId }, updateNoteDto, { new: true })
-      .exec();
     if (!updatedNote) {
-      throw new NotFoundException(`Note with ID ${noteId} not found`);
+      throw new NotFoundException(`Note with ID ${noteId} and Course ID ${courseId} not found`);
     }
+  
     return updatedNote;
   }
+  
 
-  async remove(noteId: string, userId: string): Promise<Note> {
-    const deletedNote = await this.noteModel
-      .findOneAndDelete({ noteId, userId })
-      .exec();
+  
+  async remove(noteId: string, courseId: string): Promise<Note> {
+    const deletedNote = await this.noteModel.findOneAndDelete({ noteId, courseId }).exec();
+
     if (!deletedNote) {
-      throw new NotFoundException(`Note with ID ${noteId} not found`);
+      throw new NotFoundException(`Note with ID ${noteId} and courseId ${courseId} not found`);
     }
+
     return deletedNote;
   }
 }
-
