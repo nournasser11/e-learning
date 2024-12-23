@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import InstructorLayout from "../../../../components/InstructorLayout";
+import InstructorLayout from "../../../../../components/InstructorLayout";
 import {
     getModuleDetails,
     addQuestionToModule,
     deleteQuestionFromModule,
     editQuizConfiguration,
     editQuestionInModule, QuestionDto
-} from "../../../../utils/api";
+} from "../../../../../utils/api";
 
 import { TrashIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
 

@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, ChangeEvent, FormEvent } from "react";
-import InstructorLayout from "../components/InstructorLayout";
-import { createCourse } from "../utils/api";
-import FormInput from "../components/FormInput";
+import InstructorLayout from "../../components/InstructorLayout";
+import { createCourse } from "../../utils/api";
+import FormInput from "../../components/FormInput";
 import { useRouter } from "next/navigation";
 
 

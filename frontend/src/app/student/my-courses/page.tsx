@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Layout from "../../../components/Layout";
-import { getEnrolledCourses } from "../../../utils/api";
+import { getEnrollmentsByUser } from "../../../utils/api";
 import { useRouter } from "next/navigation";
 
 const MyCourses = () => {
@@ -11,20 +11,42 @@ const MyCourses = () => {
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
+    // Fetch the userId from localStorage
     const userId = typeof window !== "undefined" ? localStorage.getItem("userId") : null;
 
     useEffect(() => {
-        if (!userId) {
-            router.push("/login");
-            return;
-        }
-
         const fetchEnrolledCourses = async () => {
             try {
-                const courses = await getEnrolledCourses(userId);
-                setCourses(courses);
+                if (userId) {
+                    const enrollments = await getEnrollmentsByUser(userId);
+
+                    // Debugging response structure
+                    console.log("API Response:", enrollments);
+
+                    if (Array.isArray(enrollments)) {
+                        const mappedCourses = enrollments.map((enrollment, index) => {
+                            const courseId = enrollment.courseId?._id;
+                            const modules = enrollment.courseId?.modules || [];
+
+                            return {
+                                _id: courseId,
+                                title: enrollment.courseId?.title || "No Title",
+                                description: enrollment.courseId?.description || "No description available.",
+                                modules: modules.map((module: any, moduleIndex: number) => ({
+                                    _id: module,
+                                    title: `Module ${moduleIndex + 1}`,
+                                })),
+                            };
+                        });
+                        setCourses(mappedCourses);
+                    } else {
+                        setError("Unexpected data format received from the server.");
+                    }
+                } else {
+                    setError("User ID not found. Please log in again.");
+                }
             } catch (err) {
-                console.error("Failed to fetch enrolled courses:", err);
+                console.error("Error fetching enrolled courses:", err);
                 setError("Failed to load your courses. Please try again later.");
             } finally {
                 setLoading(false);
@@ -32,10 +54,14 @@ const MyCourses = () => {
         };
 
         fetchEnrolledCourses();
-    }, [userId, router]);
+    }, [userId]);
 
-    const handleViewContent = (courseId: string) => {
-        router.push(`/student/course-content/${courseId}`);
+    const handleViewContent = (courseId: string, moduleId: string) => {
+        router.push(`/student/course-details/${courseId}/module/${moduleId}`);
+    };
+
+    const handleViewCourseNotes = (courseId: string) => {
+        router.push(`/student/notes/${courseId}`);
     };
 
     if (loading) {
@@ -60,30 +86,49 @@ const MyCourses = () => {
 
     return (
         <Layout>
-            <div className="container mx-auto p-6">
-                <h1 className="text-3xl font-bold text-center mb-6 text-blue-400">My Courses</h1>
+            <div className="container mx-auto px-4 py-8">
                 {courses.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {courses.map((course) => (
-                            <div
-                                key={course._id}
-                                className="p-4 bg-gray-800 text-white border border-gray-700 rounded-lg shadow-lg"
-                            >
-                                <h2 className="text-xl font-bold mb-2 text-blue-400">{course.title}</h2>
-                                <p className="text-gray-300 mb-4">
-                                    {course.description || "No description available."}
-                                </p>
-                                <button
-                                    onClick={() => handleViewContent(course._id)}
-                                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300"
+                    <div>
+                        <h1 className="text-3xl font-bold text-center mb-6 text-blue-500">My Courses</h1>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {courses.map((course) => (
+                                <div
+                                    key={course._id}
+                                    className="p-6 bg-gray-800 text-white border border-gray-700 rounded-lg shadow-lg"
                                 >
-                                    View Content
-                                </button>
-                            </div>
-                        ))}
+                                    <h2 className="text-xl font-bold mb-2 text-blue-400">{course.title}</h2>
+                                    <p className="text-gray-300 mb-4">{course.description}</p>
+
+                                    <ul className="list-disc pl-4">
+                                        {course.modules.length > 0 ? (
+                                            course.modules.map((module: any) => (
+                                                <li key={module._id}>
+                                                    <button
+                                                        className="text-blue-500 hover:underline"
+                                                        onClick={() => handleViewContent(course._id, module._id)}
+                                                    >
+                                                        {module.title}
+                                                    </button>
+                                                    <p className="text-gray-400">Module ID: {module._id}</p>
+                                                </li>
+                                            ))
+                                        ) : (
+                                            <p className="text-gray-400">No modules available for this course.</p>
+                                        )}
+                                    </ul>
+
+                                    <button
+                                        onClick={() => handleViewCourseNotes(course._id)}
+                                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300"
+                                    >
+                                        View My Notes
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 ) : (
-                    <p className="text-center text-gray-500">You are not enrolled in any courses yet.</p>
+                    <p className="text-gray-500">You are not enrolled in any courses.</p>
                 )}
             </div>
         </Layout>

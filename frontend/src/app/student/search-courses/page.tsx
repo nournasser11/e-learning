@@ -14,6 +14,7 @@ const SearchCourses = () => {
 
     const router = useRouter();
 
+    // Handle course search
     const handleSearch = async () => {
         if (!searchQuery.trim()) return;
         setLoading(true);
@@ -30,6 +31,7 @@ const SearchCourses = () => {
         }
     };
 
+    // Navigate to Course Details page
     const handleCourseClick = (courseId: string) => {
         router.push(`/student/course-details/${courseId}`);
     };
@@ -106,13 +108,14 @@ const SearchCourses = () => {
                         {courses.map((course) => (
                             <motion.div
                                 key={course._id}
-                                onClick={() => handleCourseClick(course._id)}
+                                onClick={() => handleCourseClick(course._id)} // Navigate to CourseDetails page
                                 whileHover={{ scale: 1.05 }}
                                 transition={{ duration: 0.3 }}
                                 className="p-4 bg-gray-800 text-white border border-gray-700 rounded-lg shadow-lg cursor-pointer hover:shadow-2xl transition duration-300"
                             >
                                 <h2 className="text-xl font-bold mb-2 text-blue-400">{course.title}</h2>
-                                <p className="text-gray-300">Course ID: {course._id}</p>
+                                <p className="text-gray-300 mb-2">{course.description || "No description available."}</p>
+                                <p className="text-gray-500 text-sm">Course ID: {course._id}</p>
                             </motion.div>
                         ))}
                     </div>

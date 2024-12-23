@@ -11,18 +11,12 @@ interface Instructor {
     name: string;
     email: string;
 }
-export interface Course {
-    id: string;
+interface Course {
     _id: string;
     title: string;
     description: string;
-    instructorId: string;
-    status: "valid" | "invalid" | "deleted";
-    instructor?: string; // Mark as optional
+    instructor: string; // Renamed from instructorId
 }
-
-
-// Removed duplicate Course interface
 
 const SearchInstructor = () => {
     const [searchQuery, setSearchQuery] = useState("");
@@ -30,7 +24,7 @@ const SearchInstructor = () => {
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [noCoursesMessage, setNoCoursesMessage] = useState("");  // For displaying no courses message conditionally
+    const [noCoursesMessage, setNoCoursesMessage] = useState("");
 
     const router = useRouter();
 
@@ -38,8 +32,8 @@ const SearchInstructor = () => {
         if (!searchQuery.trim()) return;
         setLoading(true);
         setError("");
-        setCourses([]);  // Clear previous courses
-        setNoCoursesMessage("");  // Clear no courses message
+        setCourses([]);
+        setNoCoursesMessage("");
 
         try {
             const results = await searchInstructorsByName(searchQuery);
@@ -55,15 +49,17 @@ const SearchInstructor = () => {
     const handleInstructorClick = async (instructorId: string) => {
         setLoading(true);
         setCourses([]);
-        setNoCoursesMessage(""); // Clear previous no courses message
+        setNoCoursesMessage("");
 
         try {
             const fetchedCourses = await getCoursesByInstructor(instructorId);
 
-            // Transform data to ensure '_id' is present
-            const normalizedCourses = fetchedCourses.map(course => ({
-                ...course,
-                id: course._id || course.id, // Use id if _id is not available
+            // Normalize data
+            const normalizedCourses = fetchedCourses.map((course: any) => ({
+                _id: course._id,
+                title: course.title,
+                description: course.description,
+                instructor: course.instructorId, // Rename instructorId to instructor
             }));
 
             if (normalizedCourses.length === 0) {
@@ -131,33 +127,27 @@ const SearchInstructor = () => {
 
                 <hr className="my-4 w-full border-t border-gray-300" />
 
-                {/* No Courses Message, if applicable */}
+                {/* No Courses Message */}
                 {noCoursesMessage && (
                     <p className="text-center text-gray-400">{noCoursesMessage}</p>
                 )}
 
-                {/* Search Results for Courses */}
-                {loading ? (
-                    <motion.p className="text-center text-gray-400" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                        Loading courses...
-                    </motion.p>
-                ) : (
-                    courses.length > 0 && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-6xl">
-                            {courses.map((course) => (
-                                <motion.div
-                                    key={course._id}
-                                    onClick={() => handleCourseClick(course._id)}
-                                    whileHover={{ scale: 1.05 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="p-2 bg-gray-800 text-white border border-gray-700 rounded-lg shadow-lg cursor-pointer hover:shadow-2xl transition duration-300"
-                                >
-                                    <h2 className="text-lg font-bold mb-1 text-blue-400">{course.title}</h2>
-                                    <p className="text-sm text-gray-300">{course.description}</p>
-                                </motion.div>
-                            ))}
-                        </div>
-                    )
+                {/* Courses */}
+                {!loading && courses.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-6xl">
+                        {courses.map((course) => (
+                            <motion.div
+                                key={course._id}
+                                onClick={() => handleCourseClick(course._id)}
+                                whileHover={{ scale: 1.05 }}
+                                transition={{ duration: 0.3 }}
+                                className="p-2 bg-gray-800 text-white border border-gray-700 rounded-lg shadow-lg cursor-pointer hover:shadow-2xl transition duration-300"
+                            >
+                                <h2 className="text-lg font-bold mb-1 text-blue-400">{course.title}</h2>
+                                <p className="text-sm text-gray-300">{course.description}</p>
+                            </motion.div>
+                        ))}
+                    </div>
                 )}
             </div>
         </Layout>

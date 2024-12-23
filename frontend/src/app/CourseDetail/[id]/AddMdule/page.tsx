@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import InstructorLayout from "../../../components/InstructorLayout";
-import { createModule } from "../../../utils/api";
+import InstructorLayout from "../../../../components/InstructorLayout";
+import { createModule } from "../../../../utils/api";
 import "./AddModule.css";
 
 const AddModuleDetailsPage: React.FC = () => {

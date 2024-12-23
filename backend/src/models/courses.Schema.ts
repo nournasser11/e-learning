@@ -48,6 +48,10 @@ export class Course {
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Module' }], default: [] })
   modules: Types.ObjectId[]; // Array of Module IDs only
 
+  @Prop({ type: [String], default: [] }) // Array of user IDs
+  enrolledUsers: string[];
+
+
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);

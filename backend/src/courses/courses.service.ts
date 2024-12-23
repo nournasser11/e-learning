@@ -123,6 +123,25 @@ export class CourseService {
       })
       .exec();
   }
+  // Fetch courses where the student is enrolled
+  async getCoursesByStudentId(studentId: string): Promise<any[]> {
+    const courses = await this.courseModel
+      .find({ enrolledUsers: studentId })
+      .populate('instructor', 'name email') // Populate instructor's name and email
+      .exec();
+
+    if (!courses) {
+      throw new NotFoundException(`No courses found for student with ID ${studentId}`);
+    }
+
+    return courses.map(course => ({
+      courseId: course._id,
+      title: course.title,
+      description: course.description,
+      instructor: course.instructor, // Populated instructor information
+    }));
+  }
+
 
 
 }

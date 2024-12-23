@@ -4,11 +4,12 @@ import React, { useEffect, useState } from "react";
 import InstructorLayout from "../../../components/InstructorLayout";
 import { useRouter } from "next/navigation";
 import { UserCircleIcon, BookOpenIcon, ChatBubbleOvalLeftEllipsisIcon, MegaphoneIcon } from "@heroicons/react/24/outline";
+import { getNotifications } from "../../../utils/api";
 
 const InstructorDashboard = () => {
   const router = useRouter();
-  const [userName, setUserName] = useState("");
-  const [notifications, setNotifications] = useState([]);
+  const [userName, setUserName] = useState<string>("");
+  const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -17,13 +18,11 @@ const InstructorDashboard = () => {
       setUserName(retrievedName);
     }
 
-    // Fetch notifications for the instructor
     const fetchNotifications = async () => {
       const userId = localStorage.getItem("userId");
       if (userId) {
         try {
-          const response = await fetch(`http://localhost:3000/notifications/${userId}`);
-          const data = await response.json();
+          const data = await getNotifications(userId);
           setNotifications(data);
         } catch (error) {
           console.error("Failed to fetch notifications:", error);
@@ -40,19 +39,13 @@ const InstructorDashboard = () => {
     router.push(path);
   };
 
-  const handlePostAnnouncement = () => {
-    router.push("/instructor/post-announcement");
-  };
-
   return (
     <InstructorLayout>
-      {/* Welcome Section */}
       <div className="bg-gray-800 text-white p-6 rounded-lg shadow-lg">
         <h1 className="text-4xl font-bold mb-2">Welcome, {userName || "Instructor"}!</h1>
         <p className="text-gray-400">Here's what's happening in your classroom today.</p>
       </div>
 
-      {/* Action Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
         <div
           onClick={() => navigateTo("/CreateCourse")}
@@ -100,7 +93,6 @@ const InstructorDashboard = () => {
         </div>
       </div>
 
-      {/* Notifications Section */}
       <div className="mt-8 bg-gray-800 text-white p-6 rounded-lg shadow-lg">
         <h2 className="text-2xl font-semibold mb-4">Notifications</h2>
         {loading ? (

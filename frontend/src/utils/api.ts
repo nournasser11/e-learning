@@ -52,6 +52,11 @@ export interface CreateModuleResponse {
     message: string;
     module: any;
 }
+// Interface for the resource content (you can adjust the fields as per your API response)
+export interface ModuleResource {
+    title: string;
+    contentUrl: string;
+}
 
 export interface Module {
     moduleId: string;
@@ -83,9 +88,6 @@ export interface Credentials {
     password: string;
 }
 
-
-
-
 export interface Course {
     courseId: string;
     title: string;
@@ -97,6 +99,14 @@ export interface Course {
     modules: string[];
     completedStudents: string[]; // Add this
     assignedStudents: string[]; // Add this
+}
+
+export interface Course {
+    _id: string;
+    title: string;
+    description: string;
+    instructorId: string;
+    status: "valid" | "invalid" | "deleted";
 }
 
 export interface CourseData {
@@ -124,7 +134,10 @@ export interface User {
     email: string;
     role: "student" | "instructor" | "admin";
     courses?: string[];
+    profilePictureUrl?: string; // Optional profile picture
 }
+
+
 
 interface RegistrationData {
     email: string;
@@ -254,16 +267,28 @@ export const getStudents = async (): Promise<any[]> => {
 export const getInstructors = async (): Promise<User[]> =>
     withErrorHandling(async () => {
         const response = await axios.get(`${API_URL}/users/instructors`);
-        return response.data;
+        return response.data.map((instructor: any) => ({
+            ...instructor,
+            id: instructor.userId, // Map userId to id for frontend usage
+        }));
     }, "Get instructors error");
 
+// Delete an instructor by userId
+export const deleteInstructorByUserId = async (userId: string): Promise<void> =>
+    withErrorHandling(async () => {
+        await axios.delete(`${API_URL}/users/instructors/${userId}`);
+    }, "Delete instructor error");
+
+
 // Delete a user
-export const deleteUser = async (userId: string): Promise<void> => {
-    if (!userId) {
-        throw new Error("User ID is required for deletion.");
-    }
-    await axios.delete(`${API_URL}/users/${userId}`);
+//Delete a user (student or instructor)
+export const deleteUserbyID = async (ObjectId: string): Promise<void> => {
+    return await withErrorHandling(async () => {
+        const response = await axios.delete(`${API_URL}/users/${ObjectId}`);
+        console.log("Delete response:", response.data); // Debugging log
+    }, "Delete user error");
 };
+
 
 
 
@@ -276,6 +301,7 @@ export const updateCourseStatus = async (
         const response = await axios.put(`${API_URL}/courses/status/${courseId}, { status }`);
         return response.data;
     }, "Update course status error");
+
 
 // Search courses by title
 export const SearchCourses = async (query: string): Promise<Course[]> =>
@@ -290,6 +316,7 @@ export const SearchCourses = async (query: string): Promise<Course[]> =>
         }));
     }, "Search courses error");
 
+
 // Get courses for a specific instructor
 export const getCoursesByInstructor = async (instructorId: string): Promise<Course[]> =>
     withErrorHandling(async () => {
@@ -297,6 +324,39 @@ export const getCoursesByInstructor = async (instructorId: string): Promise<Cour
         return response.data;
     }, "Get courses by instructor error");
 
+
+// Get enrollments by user
+export const getEnrollmentsByUser = async (userId: string) => {
+    try {
+        const response = await axios.get(`${API_URL}/enrollment/user/${userId}`);
+        return response.data;
+    } catch (error) {
+        logError(error, "Get Enrollments by User");
+        throw error;
+    }
+};
+
+
+// Function to fetch the resources of a specific module for a course
+export const getModuleResources = async (courseId: string, moduleId: string): Promise<ModuleResource> => {
+    try {
+        const response = await axios.get(`${API_URL}/courses/${courseId}/modules/${moduleId}/resources`);
+        return response.data; // Assuming the response data contains the title and contentUrl
+    } catch (error) {
+        console.error("Error fetching module resources:", error);
+        throw error;
+    }
+};
+
+
+
+// Get courses by course ID
+export const getCoursesByIds = async (courseIds: string[]): Promise<Course[]> =>
+    withErrorHandling(async () => {
+        const requests = courseIds.map((id) => axios.get(`${API_URL}/courses/Cbyid/${id}`));
+        const responses = await Promise.all(requests);
+        return responses.map((response) => response.data);
+    }, "Get courses by IDs error");
 
 // Delete a student by ID
 export const deleteStudent = async (id: string): Promise<{ message: string }> => {
@@ -317,6 +377,21 @@ export const deleteStudent = async (id: string): Promise<{ message: string }> =>
         }
     }
 };
+
+//delete user
+export const deleteUser = async (ObjectId: string): Promise<void> => {
+    return await withErrorHandling(async () => {
+        await axios.delete(`${API_URL}/users/${ObjectId}`, {
+            headers: { "Content-Type": "application/json" },
+        });
+    }, "Delete user error");
+};
+
+//delete student by userId
+export const deleteStudentByUserId = async (ObjectId: string): Promise<void> =>
+    withErrorHandling(async () => {
+        await axios.delete(`${API_URL}/users/students/${ObjectId}`);
+    }, "Delete Student error");
 
 // Fetch user profile
 export const fetchUserProfile = async (userId: string) => {
@@ -429,6 +504,16 @@ export const createAnnouncement = async (data: {
         throw new Error("Failed to create announcement.");
     }
     return response.json();
+};
+
+export const getNotificationsForUser = async (userId: string): Promise<any[]> => {
+    try {
+        const response = await axios.get(`${API_URL}/notifications/${userId}`);
+        return response.data;
+    } catch (error) {
+        logError(error, 'Fetch notifications');
+        throw error;
+    }
 };
 
 // Get notifications for a user
@@ -653,6 +738,16 @@ export const deleteQuestionFromModule = async (
         `${API_URL}/courses/${courseId}/modules/${moduleId}/questions/${questionIndex}`
     );
     return response.data;
+};
+
+// Register a new instructor
+export const registerInstructor = async (data: {
+    name: string;
+    email: string;
+    password: string;
+    profilePictureUrl?: string;
+}): Promise<{ message: string; user: User }> => {
+    return register({ ...data, role: "instructor" });
 };
 
 // Axios request interceptor for JWT token

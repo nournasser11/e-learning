@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Layout from "../../../components/Layout";
-import * as http from 'http';
-
 import {
     fetchUserProfile,
     updateName,
@@ -38,7 +36,7 @@ const ProfilePage: React.FC = () => {
                 if (profile.profilePicture) {
                     profile.profilePicture = profile.profilePicture.startsWith("http")
                         ? profile.profilePicture
-                        : http://localhost:3000${profile.profilePicture};
+                        : `http://localhost:3000${profile.profilePicture}`;
                 }
 
                 console.log("Fetched Profile:", profile); // Debug log
@@ -63,9 +61,9 @@ const ProfilePage: React.FC = () => {
 
             const profilePictureUrl = response.profilePictureUrl.startsWith("http")
                 ? response.profilePictureUrl
-                : http://localhost:3000${response.profilePictureUrl};
+                : `http://localhost:3000${response.profilePictureUrl}`;
 
-                alert("Profile picture updated successfully!");
+            alert("Profile picture updated successfully!");
             setUser((prev: any) => ({
                 ...prev,
                 profilePicture: profilePictureUrl,
